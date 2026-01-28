@@ -1,0 +1,732 @@
+/**
+ * ==========================================================================
+ * LAYOUT.CSS - Structure et grilles de l'application
+ * ==========================================================================
+ *
+ * Ce fichier définit la structure globale du dashboard :
+ * 1. Container principal de l'application
+ * 2. Header
+ * 3. Navigation entre sections
+ * 4. Grilles de contenu (métriques, graphiques)
+ * 5. Sections spécifiques (Admin, Review, Forecast)
+ * 6. Responsive design
+ *
+ * ==========================================================================
+ */
+
+/* ========================================================================
+ * 1. CONTAINER PRINCIPAL
+ * ======================================================================== */
+
+/**
+ * Container de l'application
+ * Centre le contenu et définit la largeur maximale
+ */
+.app-container {
+  width: 100%;
+  max-width: var(--max-width-content);
+  margin: 0 auto;
+  padding: var(--spacing-6);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/**
+ * Container pour le mode présentation (plein écran)
+ */
+.app-container--presentation {
+  max-width: 100%;
+  padding: var(--spacing-8);
+}
+
+/* ========================================================================
+ * 2. HEADER
+ * ======================================================================== */
+
+/**
+ * Header principal du dashboard
+ * Affiche : Nom équipe | Sprint | Dates
+ */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-3) var(--spacing-5);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--spacing-4);
+  gap: var(--spacing-4);
+}
+
+/**
+ * Section gauche du header (logo + nom équipe)
+ */
+.header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.header__logo {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-accent-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-inverse);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xl);
+}
+
+.header__team-name {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/**
+ * Section centrale du header (infos sprint)
+ */
+.header__sprint-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.header__sprint-name {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.header__sprint-dates {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+/**
+ * Section droite du header (timestamp + actions)
+ */
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.header__timestamp {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.header__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.header__nav {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.header__info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.header__sprint {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+/* ========================================================================
+ * 3. NAVIGATION ENTRE SECTIONS
+ * ======================================================================== */
+
+/**
+ * Barre de navigation principale
+ */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-6);
+}
+
+/**
+ * Item de navigation
+ */
+.nav__item {
+  padding: var(--spacing-3) var(--spacing-5);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-all);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.nav__item:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.nav__item--active {
+  background-color: var(--color-accent-blue);
+  color: var(--color-text-inverse);
+}
+
+.nav__item--active:hover {
+  background-color: var(--color-accent-blue-dark);
+  color: var(--color-text-inverse);
+}
+
+.nav__item-icon {
+  font-size: var(--font-size-lg);
+}
+
+/**
+ * Séparateur dans la navigation
+ */
+.nav__separator {
+  width: 1px;
+  height: 24px;
+  background-color: var(--color-border-default);
+  margin: 0 var(--spacing-2);
+}
+
+/* ========================================================================
+ * 4. SECTIONS ET PAGES
+ * ======================================================================== */
+
+/**
+ * Container de page (chaque section est une page)
+ */
+.page {
+  display: none;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  animation: fadeIn var(--transition-normal) var(--ease-out);
+}
+
+.page--active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/**
+ * Titre de section
+ */
+.section-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.section-title__icon {
+  color: var(--color-accent-blue);
+}
+
+/**
+ * Section générique avec fond
+ */
+.section {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  box-shadow: var(--shadow-card);
+}
+
+/* ========================================================================
+ * 5. GRILLES DE CONTENU
+ * ======================================================================== */
+
+/**
+ * Grille pour les métriques principales (4 colonnes)
+ * Utilisée dans la section Review
+ */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-6);
+}
+
+/**
+ * Grille pour les graphiques (2 colonnes)
+ */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-6);
+}
+
+/**
+ * Grille asymétrique (sidebar + contenu principal)
+ * Utilisée dans la section Admin
+ */
+.grid-sidebar {
+  display: grid;
+  grid-template-columns: var(--width-sidebar) 1fr;
+  gap: var(--spacing-6);
+}
+
+/**
+ * Grille flexible pour les cards (auto-fit)
+ */
+.grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-6);
+}
+
+/**
+ * Container pour les graphiques
+ */
+.chart-container {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  box-shadow: var(--shadow-card);
+  min-height: var(--height-chart);
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-container__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+.chart-container__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.chart-container__canvas {
+  flex: 1;
+  min-height: 200px;
+}
+
+/* ========================================================================
+ * 6. LAYOUT SPÉCIFIQUE - SPRINT GOALS + STORY POINTS
+ * ======================================================================== */
+
+/**
+ * Container combiné Goals + Story Points
+ */
+.goals-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-6);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  box-shadow: var(--shadow-card);
+}
+
+.goals-section__goals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.goals-section__points {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-6);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+}
+
+/* ========================================================================
+ * 7. LAYOUT SPÉCIFIQUE - SECTION ADMIN
+ * ======================================================================== */
+
+/**
+ * Toggle pour masquer/afficher la section admin
+ */
+.admin-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: var(--transition-all);
+  margin-bottom: var(--spacing-4);
+}
+
+.admin-toggle:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.admin-toggle__icon {
+  transition: transform var(--transition-normal) var(--ease-out);
+}
+
+.admin-toggle--expanded .admin-toggle__icon {
+  transform: rotate(180deg);
+}
+
+/**
+ * Contenu de la section admin (collapsible)
+ */
+.admin-content {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-6);
+  overflow: hidden;
+  max-height: 2000px;
+  transition: max-height var(--transition-slow) var(--ease-out),
+              opacity var(--transition-normal) var(--ease-out);
+}
+
+.admin-content--collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/**
+ * Carte admin (upload, saisie, etc.)
+ */
+.admin-card {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  box-shadow: var(--shadow-card);
+}
+
+.admin-card__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.admin-card__title-icon {
+  color: var(--color-accent-blue);
+}
+
+/* ========================================================================
+ * 8. LAYOUT POUR L'EXPORT PDF
+ * ======================================================================== */
+
+/**
+ * Container pour le contenu exportable
+ * Dimensions optimisées pour PDF paysage 16:9
+ */
+.pdf-page {
+  width: 1920px;
+  min-height: 1080px;
+  padding: var(--spacing-10);
+  background-color: var(--color-bg-primary);
+  display: none;
+}
+
+.pdf-page--visible {
+  display: block;
+}
+
+/**
+ * En mode impression
+ */
+@media print {
+  .app-container {
+    padding: 0;
+  }
+
+  .nav,
+  .admin-toggle,
+  .admin-content,
+  .header__actions {
+    display: none !important;
+  }
+
+  .page {
+    display: flex !important;
+    page-break-after: always;
+  }
+
+  .section,
+  .chart-container {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+}
+
+/* ========================================================================
+ * 9. RESPONSIVE DESIGN
+ * ======================================================================== */
+
+/**
+ * Laptop (max 1200px)
+ */
+@media (max-width: 1200px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .goals-section {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-sidebar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/**
+ * Tablet (max 992px)
+ */
+@media (max-width: 992px) {
+  .app-container {
+    padding: var(--spacing-4);
+  }
+
+  .header {
+    flex-direction: column;
+    gap: var(--spacing-4);
+    text-align: center;
+  }
+
+  .header__brand,
+  .header__actions {
+    justify-content: center;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/**
+ * Tablet portrait (max 768px)
+ */
+@media (max-width: 768px) {
+  :root {
+    --font-size-5xl: 2.5rem;
+    --font-size-4xl: 2rem;
+    --font-size-3xl: 1.5rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav__item {
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-sm);
+  }
+}
+
+/**
+ * Mobile (max 576px)
+ */
+@media (max-width: 576px) {
+  .app-container {
+    padding: var(--spacing-3);
+  }
+
+  .section,
+  .chart-container,
+  .admin-card {
+    padding: var(--spacing-4);
+    border-radius: var(--radius-lg);
+  }
+
+  .header {
+    padding: var(--spacing-4);
+  }
+
+  .header__logo {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* ========================================================================
+ * 10. UTILITAIRES DE LAYOUT
+ * ======================================================================== */
+
+/** Conteneur centré */
+.container-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+/** Séparateur horizontal */
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-border-default);
+  margin: var(--spacing-6) 0;
+}
+
+/** Espacement entre sections */
+.section-spacer {
+  height: var(--spacing-8);
+}
+
+/** Sticky header pour scroll */
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background-color: var(--color-bg-primary);
+}
+
+/* ========================================================================
+ * 11. APP STRUCTURE
+ * ======================================================================== */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-4);
+  max-width: var(--max-width-content);
+  margin: 0 auto;
+}
+
+.nav-container {
+  margin-bottom: var(--spacing-4);
+}
+
+.main {
+  flex: 1;
+}
+
+/* ========================================================================
+ * 12. NOTIFICATIONS
+ * ======================================================================== */
+
+.notifications-container {
+  position: fixed;
+  bottom: var(--spacing-4);
+  right: var(--spacing-4);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--spacing-2);
+  max-width: 400px;
+}
+
+.notification {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: slideInUp var(--transition-normal) var(--ease-out);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification--success {
+  border-left: 4px solid var(--color-status-success);
+}
+
+.notification--error {
+  border-left: 4px solid var(--color-status-danger);
+}
+
+.notification--warning {
+  border-left: 4px solid var(--color-status-warning);
+}
+
+.notification--info {
+  border-left: 4px solid var(--color-status-info);
+}
+
+.notification__icon {
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+}
+
+.notification__message {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.notification__close {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: var(--spacing-1);
+  border-radius: var(--radius-sm);
+  transition: var(--transition-colors);
+}
+
+.notification__close:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}

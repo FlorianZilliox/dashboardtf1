@@ -1,0 +1,454 @@
+/**
+ * ==========================================================================
+ * SPRINT REVIEW DASHBOARD - DESIGN SYSTEM
+ * ==========================================================================
+ *
+ * Ce fichier contient tous les design tokens de l'application.
+ * Il définit les variables CSS qui assurent la cohérence visuelle.
+ *
+ * PRINCIPES :
+ * - Toutes les couleurs, espacements, et tailles sont définis ici
+ * - Utiliser UNIQUEMENT ces variables dans les autres fichiers CSS
+ * - Nommage sémantique : ce que ça fait, pas ce que ça ressemble
+ *
+ * STRUCTURE :
+ * 1. Couleurs (backgrounds, textes, accents, états)
+ * 2. Typographie (familles, tailles, poids)
+ * 3. Espacements (système 8px)
+ * 4. Bordures et arrondis
+ * 5. Ombres
+ * 6. Transitions
+ * 7. Z-index
+ * 8. Breakpoints (commentés, utilisés en media queries)
+ *
+ * ==========================================================================
+ */
+
+:root {
+  /* ========================================================================
+   * 1. COULEURS
+   * ======================================================================== */
+
+  /* -------------------------------------------------------------------------
+   * 1.1 Backgrounds - Fonds de l'application
+   * ------------------------------------------------------------------------- */
+
+  /** Fond principal de l'application (gris très clair) */
+  --color-bg-primary: #f8fafc;
+
+  /** Fond des cards et conteneurs (blanc pur) */
+  --color-bg-card: #ffffff;
+
+  /** Fond des sections secondaires, inputs (gris clair) */
+  --color-bg-secondary: #f1f5f9;
+
+  /** Fond au survol des éléments interactifs */
+  --color-bg-hover: #e2e8f0;
+
+  /** Fond des éléments sélectionnés/actifs */
+  --color-bg-active: #dbeafe;
+
+  /* -------------------------------------------------------------------------
+   * 1.2 Textes - Couleurs de typographie
+   * ------------------------------------------------------------------------- */
+
+  /** Texte principal (titres, corps important) - quasi noir */
+  --color-text-primary: #1e293b;
+
+  /** Texte secondaire (labels, descriptions) - gris foncé */
+  --color-text-secondary: #64748b;
+
+  /** Texte désactivé/placeholder - gris clair */
+  --color-text-muted: #94a3b8;
+
+  /** Texte sur fond coloré (blanc) */
+  --color-text-inverse: #ffffff;
+
+  /* -------------------------------------------------------------------------
+   * 1.3 Couleurs d'accent - Palette pastel pour les graphiques
+   *
+   * USAGE RECOMMANDÉ :
+   * - Blue   : Métriques principales, éléments de navigation actifs
+   * - Teal   : Données positives, succès secondaire
+   * - Coral  : Alertes douces, données négatives
+   * - Yellow : Avertissements, données intermédiaires
+   * - Purple : Données tertiaires, catégories additionnelles
+   * - Green  : Validation, succès
+   * - Orange : Données complémentaires
+   * ------------------------------------------------------------------------- */
+
+  /** Bleu pastel - Couleur principale d'accent */
+  --color-accent-blue: #6b9bd2;
+  --color-accent-blue-light: #a3c4e9;
+  --color-accent-blue-dark: #4a7bb5;
+
+  /** Turquoise/Teal - Données secondaires positives */
+  --color-accent-teal: #5bb5b0;
+  --color-accent-teal-light: #8fd4d0;
+  --color-accent-teal-dark: #3d9691;
+
+  /** Corail/Rose - Alertes douces, erreurs */
+  --color-accent-coral: #f28b82;
+  --color-accent-coral-light: #f7b4ae;
+  --color-accent-coral-dark: #e05a4f;
+
+  /** Jaune doux - Avertissements */
+  --color-accent-yellow: #f5c869;
+  --color-accent-yellow-light: #f9dc9a;
+  --color-accent-yellow-dark: #e5a832;
+
+  /** Violet pastel - Catégories tertiaires */
+  --color-accent-purple: #a78bda;
+  --color-accent-purple-light: #c4b0e8;
+  --color-accent-purple-dark: #8a6bc4;
+
+  /** Vert doux - Succès, validation */
+  --color-accent-green: #7bc47f;
+  --color-accent-green-light: #a5d8a8;
+  --color-accent-green-dark: #5aa95e;
+
+  /** Orange pastel - Données complémentaires */
+  --color-accent-orange: #f5a962;
+  --color-accent-orange-light: #f9c795;
+  --color-accent-orange-dark: #e8852e;
+
+  /* -------------------------------------------------------------------------
+   * 1.4 Couleurs d'état - Feedback utilisateur
+   * ------------------------------------------------------------------------- */
+
+  /** Succès - Actions réussies, objectifs atteints (>=90%) */
+  --color-status-success: #22c55e;
+  --color-status-success-bg: #dcfce7;
+  --color-status-success-border: #86efac;
+
+  /** Avertissement - Attention requise, partiel (70-89%) */
+  --color-status-warning: #f59e0b;
+  --color-status-warning-bg: #fef3c7;
+  --color-status-warning-border: #fcd34d;
+
+  /** Danger - Erreur, échec, critique (<70%) */
+  --color-status-danger: #ef4444;
+  --color-status-danger-bg: #fee2e2;
+  --color-status-danger-border: #fca5a5;
+
+  /** Info - Information neutre */
+  --color-status-info: #3b82f6;
+  --color-status-info-bg: #dbeafe;
+  --color-status-info-border: #93c5fd;
+
+  /* -------------------------------------------------------------------------
+   * 1.5 Bordures
+   * ------------------------------------------------------------------------- */
+
+  /** Bordure par défaut (inputs, cards) */
+  --color-border-default: #e2e8f0;
+
+  /** Bordure au focus */
+  --color-border-focus: var(--color-accent-blue);
+
+  /** Bordure légère (séparateurs) */
+  --color-border-light: #f1f5f9;
+
+  /* ========================================================================
+   * 2. TYPOGRAPHIE
+   * ======================================================================== */
+
+  /* -------------------------------------------------------------------------
+   * 2.1 Familles de polices
+   * ------------------------------------------------------------------------- */
+
+  /** Police principale - Interface */
+  --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                         Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+
+  /** Police mono - Code, données */
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco,
+                      Consolas, monospace;
+
+  /* -------------------------------------------------------------------------
+   * 2.2 Tailles de police
+   *
+   * Échelle basée sur un ratio de 1.25 (Major Third)
+   * Base: 16px
+   * ------------------------------------------------------------------------- */
+
+  /** 12px - Légendes, badges, footnotes */
+  --font-size-xs: 0.75rem;
+
+  /** 14px - Labels, texte secondaire */
+  --font-size-sm: 0.875rem;
+
+  /** 16px - Texte de base */
+  --font-size-base: 1rem;
+
+  /** 18px - Titres de sections */
+  --font-size-lg: 1.125rem;
+
+  /** 20px - Sous-titres importants */
+  --font-size-xl: 1.25rem;
+
+  /** 24px - Valeurs secondaires, titres cards */
+  --font-size-2xl: 1.5rem;
+
+  /** 30px - Titres de page */
+  --font-size-3xl: 1.875rem;
+
+  /** 36px - Grandes métriques */
+  --font-size-4xl: 2.25rem;
+
+  /** 48px - Métriques principales (KPIs) */
+  --font-size-5xl: 3rem;
+
+  /** 60px - Métriques hero */
+  --font-size-6xl: 3.75rem;
+
+  /* -------------------------------------------------------------------------
+   * 2.3 Poids de police
+   * ------------------------------------------------------------------------- */
+
+  /** 400 - Texte normal */
+  --font-weight-normal: 400;
+
+  /** 500 - Texte moyen (labels) */
+  --font-weight-medium: 500;
+
+  /** 600 - Semi-gras (titres sections) */
+  --font-weight-semibold: 600;
+
+  /** 700 - Gras (métriques, KPIs) */
+  --font-weight-bold: 700;
+
+  /* -------------------------------------------------------------------------
+   * 2.4 Hauteurs de ligne
+   * ------------------------------------------------------------------------- */
+
+  /** Compact - Métriques, titres */
+  --line-height-tight: 1.2;
+
+  /** Normal - Texte courant */
+  --line-height-normal: 1.5;
+
+  /** Aéré - Paragraphes longs */
+  --line-height-relaxed: 1.75;
+
+  /* ========================================================================
+   * 3. ESPACEMENTS
+   *
+   * Système basé sur 8px (0.5rem)
+   * Utiliser ces valeurs pour margins, paddings, gaps
+   * ======================================================================== */
+
+  /** 4px */
+  --spacing-1: 0.25rem;
+
+  /** 8px */
+  --spacing-2: 0.5rem;
+
+  /** 12px */
+  --spacing-3: 0.75rem;
+
+  /** 16px */
+  --spacing-4: 1rem;
+
+  /** 20px */
+  --spacing-5: 1.25rem;
+
+  /** 24px */
+  --spacing-6: 1.5rem;
+
+  /** 32px */
+  --spacing-8: 2rem;
+
+  /** 40px */
+  --spacing-10: 2.5rem;
+
+  /** 48px */
+  --spacing-12: 3rem;
+
+  /** 64px */
+  --spacing-16: 4rem;
+
+  /** 80px */
+  --spacing-20: 5rem;
+
+  /* ========================================================================
+   * 4. BORDURES ET ARRONDIS
+   * ======================================================================== */
+
+  /** Bordure standard */
+  --border-width: 1px;
+
+  /** Bordure épaisse (focus, active) */
+  --border-width-thick: 2px;
+
+  /* -------------------------------------------------------------------------
+   * 4.1 Rayons de bordure (border-radius)
+   * ------------------------------------------------------------------------- */
+
+  /** 4px - Petits éléments (badges, tags) */
+  --radius-sm: 0.25rem;
+
+  /** 6px - Boutons, inputs */
+  --radius-md: 0.375rem;
+
+  /** 8px - Cards compactes, toggles */
+  --radius-lg: 0.5rem;
+
+  /** 12px - Cards standards */
+  --radius-xl: 0.75rem;
+
+  /** 16px - Grandes cards, modals */
+  --radius-2xl: 1rem;
+
+  /** Cercle parfait */
+  --radius-full: 9999px;
+
+  /* ========================================================================
+   * 5. OMBRES
+   *
+   * Ombres douces pour un rendu moderne et élégant
+   * ======================================================================== */
+
+  /** Ombre légère - Éléments au repos */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  /** Ombre moyenne - Cards, dropdowns */
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05),
+               0 2px 4px rgba(0, 0, 0, 0.05);
+
+  /** Ombre prononcée - Éléments en survol */
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05),
+               0 4px 6px rgba(0, 0, 0, 0.05);
+
+  /** Ombre forte - Modals, popovers */
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.08),
+               0 10px 10px rgba(0, 0, 0, 0.04);
+
+  /** Ombre pour les cards (effet de profondeur subtil) */
+  --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.05),
+                 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  /** Ombre au survol des cards */
+  --shadow-card-hover: 0 6px 8px rgba(0, 0, 0, 0.07),
+                       0 2px 4px rgba(0, 0, 0, 0.12);
+
+  /* ========================================================================
+   * 6. TRANSITIONS
+   * ======================================================================== */
+
+  /** Durées */
+  --transition-fast: 150ms;
+  --transition-normal: 200ms;
+  --transition-slow: 300ms;
+
+  /** Easings */
+  --ease-default: ease;
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /** Transitions prédéfinies */
+  --transition-colors: color var(--transition-normal) var(--ease-default),
+                       background-color var(--transition-normal) var(--ease-default),
+                       border-color var(--transition-normal) var(--ease-default);
+
+  --transition-transform: transform var(--transition-normal) var(--ease-out);
+
+  --transition-shadow: box-shadow var(--transition-normal) var(--ease-default);
+
+  --transition-all: all var(--transition-normal) var(--ease-default);
+
+  /* ========================================================================
+   * 7. Z-INDEX
+   *
+   * Échelle pour gérer l'empilement des éléments
+   * ======================================================================== */
+
+  /** Éléments de base */
+  --z-base: 0;
+
+  /** Éléments légèrement surélevés (cards en hover) */
+  --z-elevated: 10;
+
+  /** Dropdowns, menus */
+  --z-dropdown: 100;
+
+  /** Navigation sticky */
+  --z-sticky: 200;
+
+  /** Overlays (fond sombre derrière modal) */
+  --z-overlay: 300;
+
+  /** Modals, dialogs */
+  --z-modal: 400;
+
+  /** Tooltips, popovers */
+  --z-tooltip: 500;
+
+  /** Notifications toast */
+  --z-toast: 600;
+
+  /* ========================================================================
+   * 8. DIMENSIONS SPÉCIFIQUES
+   * ======================================================================== */
+
+  /** Largeur maximale du contenu principal */
+  --max-width-content: 1400px;
+
+  /** Largeur de la sidebar admin */
+  --width-sidebar: 320px;
+
+  /** Hauteur du header */
+  --height-header: 80px;
+
+  /** Hauteur minimale des cards de métriques */
+  --height-metric-card: 160px;
+
+  /** Hauteur des graphiques */
+  --height-chart: 300px;
+  --height-chart-small: 200px;
+
+  /* ========================================================================
+   * 9. COULEURS SPÉCIFIQUES AUX GRAPHIQUES (Chart.js)
+   *
+   * Palette ordonnée pour les datasets
+   * ======================================================================== */
+
+  /** Couleurs principales pour les séries de données */
+  --chart-color-1: var(--color-accent-blue);
+  --chart-color-2: var(--color-accent-teal);
+  --chart-color-3: var(--color-accent-coral);
+  --chart-color-4: var(--color-accent-yellow);
+  --chart-color-5: var(--color-accent-purple);
+  --chart-color-6: var(--color-accent-green);
+  --chart-color-7: var(--color-accent-orange);
+
+  /** Couleurs avec transparence pour les fonds de graphiques */
+  --chart-color-1-alpha: rgba(107, 155, 210, 0.2);
+  --chart-color-2-alpha: rgba(91, 181, 176, 0.2);
+  --chart-color-3-alpha: rgba(242, 139, 130, 0.2);
+  --chart-color-4-alpha: rgba(245, 200, 105, 0.2);
+  --chart-color-5-alpha: rgba(167, 139, 218, 0.2);
+  --chart-color-6-alpha: rgba(123, 196, 127, 0.2);
+  --chart-color-7-alpha: rgba(245, 169, 98, 0.2);
+
+  /** Ligne de référence (benchmark) */
+  --chart-color-reference: #94a3b8;
+  --chart-color-reference-alpha: rgba(148, 163, 184, 0.3);
+}
+
+/* ==========================================================================
+ * BREAKPOINTS (pour référence)
+ *
+ * Utilisation dans les media queries :
+ * @media (max-width: 1200px) { ... }  // Laptop
+ * @media (max-width: 992px)  { ... }  // Tablet landscape
+ * @media (max-width: 768px)  { ... }  // Tablet portrait
+ * @media (max-width: 576px)  { ... }  // Mobile
+ *
+ * ÉCRANS CIBLES :
+ * - Desktop/Projection : 1920×1080 (optimisé pour TV/Teams)
+ * - Laptop : 1366×768
+ * - Admin : 1024+ (section admin utilisable)
+ * ==========================================================================
+ */

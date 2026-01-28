@@ -1,0 +1,459 @@
+/**
+ * ==========================================================================
+ * LOADER.CSS - Indicateurs de chargement
+ * ==========================================================================
+ *
+ * Styles pour :
+ * - Spinners
+ * - Progress bars
+ * - Skeleton screens
+ * - Overlays de chargement
+ *
+ * ==========================================================================
+ */
+
+/* ========================================================================
+ * 1. SPINNER CIRCULAIRE
+ * ======================================================================== */
+
+/**
+ * Spinner de base
+ */
+.loader {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--color-bg-secondary);
+  border-top-color: var(--color-accent-blue);
+  border-radius: 50%;
+  animation: loader-spin 0.8s linear infinite;
+}
+
+@keyframes loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/**
+ * Tailles de spinner
+ */
+.loader--xs {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+}
+
+.loader--sm {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.loader--lg {
+  width: 32px;
+  height: 32px;
+  border-width: 4px;
+}
+
+.loader--xl {
+  width: 48px;
+  height: 48px;
+  border-width: 4px;
+}
+
+/**
+ * Variantes de couleur
+ */
+.loader--white {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: var(--color-text-inverse);
+}
+
+.loader--success {
+  border-top-color: var(--color-status-success);
+}
+
+.loader--danger {
+  border-top-color: var(--color-status-danger);
+}
+
+/* ========================================================================
+ * 2. DOTS LOADER
+ * ======================================================================== */
+
+/**
+ * Chargement avec points animés
+ */
+.dots-loader {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.dots-loader__dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-accent-blue);
+  border-radius: 50%;
+  animation: dots-bounce 1.4s ease-in-out infinite;
+}
+
+.dots-loader__dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.dots-loader__dot:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.dots-loader__dot:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+@keyframes dots-bounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/**
+ * Taille compacte
+ */
+.dots-loader--sm .dots-loader__dot {
+  width: 6px;
+  height: 6px;
+}
+
+/* ========================================================================
+ * 3. PULSE LOADER
+ * ======================================================================== */
+
+/**
+ * Cercle avec effet de pulsation
+ */
+.pulse-loader {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.pulse-loader::before,
+.pulse-loader::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: var(--color-accent-blue);
+}
+
+.pulse-loader::before {
+  animation: pulse-scale 2s ease-out infinite;
+}
+
+.pulse-loader::after {
+  animation: pulse-scale 2s ease-out 1s infinite;
+}
+
+@keyframes pulse-scale {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* ========================================================================
+ * 4. PROGRESS BAR
+ * ======================================================================== */
+
+/**
+ * Barre de progression
+ */
+.progress {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress__bar {
+  height: 100%;
+  background-color: var(--color-accent-blue);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-normal);
+}
+
+/**
+ * Variantes de taille
+ */
+.progress--sm {
+  height: 4px;
+}
+
+.progress--lg {
+  height: 12px;
+}
+
+/**
+ * Variantes de couleur
+ */
+.progress--success .progress__bar {
+  background-color: var(--color-status-success);
+}
+
+.progress--warning .progress__bar {
+  background-color: var(--color-status-warning);
+}
+
+.progress--danger .progress__bar {
+  background-color: var(--color-status-danger);
+}
+
+/**
+ * Animation indéterminée
+ */
+.progress--indeterminate .progress__bar {
+  width: 30%;
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+/**
+ * Progress avec label
+ */
+.progress-labeled {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.progress-labeled__header {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+}
+
+.progress-labeled__label {
+  color: var(--color-text-secondary);
+}
+
+.progress-labeled__value {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* ========================================================================
+ * 5. SKELETON SCREEN
+ * ======================================================================== */
+
+/**
+ * Base du skeleton
+ */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-secondary) 0%,
+    var(--color-bg-hover) 50%,
+    var(--color-bg-secondary) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/**
+ * Skeleton pour texte
+ */
+.skeleton--text {
+  height: 16px;
+  width: 100%;
+  margin-bottom: var(--spacing-2);
+}
+
+.skeleton--text:last-child {
+  width: 60%;
+}
+
+/**
+ * Skeleton pour titre
+ */
+.skeleton--title {
+  height: 28px;
+  width: 50%;
+  margin-bottom: var(--spacing-4);
+}
+
+/**
+ * Skeleton pour image/avatar
+ */
+.skeleton--avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+}
+
+.skeleton--image {
+  width: 100%;
+  height: 200px;
+}
+
+/**
+ * Skeleton pour bouton
+ */
+.skeleton--button {
+  height: 40px;
+  width: 120px;
+  border-radius: var(--radius-lg);
+}
+
+/**
+ * Skeleton pour card
+ */
+.skeleton-card {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-5);
+  box-shadow: var(--shadow-card);
+}
+
+/* ========================================================================
+ * 6. OVERLAY DE CHARGEMENT
+ * ======================================================================== */
+
+/**
+ * Overlay qui couvre un container
+ */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-4);
+  z-index: var(--z-overlay);
+  border-radius: inherit;
+}
+
+.loading-overlay--dark {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.loading-overlay__text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/**
+ * Fullscreen loading
+ */
+.loading-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-bg-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-6);
+  z-index: var(--z-modal);
+}
+
+.loading-fullscreen__logo {
+  font-size: 48px;
+  color: var(--color-accent-blue);
+}
+
+.loading-fullscreen__text {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+}
+
+/* ========================================================================
+ * 7. BUTTON LOADING STATE
+ * ======================================================================== */
+
+/**
+ * Bouton en chargement
+ */
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: loader-spin 0.6s linear infinite;
+}
+
+/* ========================================================================
+ * 8. UPLOAD LOADING
+ * ======================================================================== */
+
+/**
+ * État de chargement pour upload
+ */
+.upload-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+}
+
+.upload-loading__progress {
+  flex: 1;
+}
+
+.upload-loading__percentage {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  min-width: 40px;
+  text-align: right;
+}

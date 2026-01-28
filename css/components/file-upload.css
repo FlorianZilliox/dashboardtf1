@@ -1,0 +1,613 @@
+/**
+ * ==========================================================================
+ * FILE-UPLOAD.CSS - Zone d'upload de fichiers
+ * ==========================================================================
+ *
+ * Styles pour :
+ * - Zone de drag & drop
+ * - Liste de fichiers uploadés
+ * - États (dragover, success, error)
+ * - Progression d'upload
+ *
+ * ==========================================================================
+ */
+
+/* ========================================================================
+ * 1. ZONE DE DROP
+ * ======================================================================== */
+
+/**
+ * Container principal de l'upload
+ */
+.file-upload {
+  position: relative;
+  width: 100%;
+}
+
+/**
+ * Zone de drop
+ */
+.file-upload__dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-8);
+  background-color: var(--color-bg-secondary);
+  border: 2px dashed var(--color-border-default);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: var(--transition-all);
+  text-align: center;
+  min-height: 150px;
+}
+
+.file-upload__dropzone:hover {
+  border-color: var(--color-accent-blue);
+  background-color: var(--color-bg-hover);
+}
+
+/**
+ * État dragover/active (fichier au-dessus)
+ */
+.file-upload__dropzone--dragover,
+.file-upload__dropzone--active {
+  border-color: var(--color-accent-blue);
+  background-color: var(--color-bg-active);
+  transform: scale(1.01);
+}
+
+.file-upload__dropzone--dragover .file-upload__icon,
+.file-upload__dropzone--active .file-upload__icon {
+  transform: scale(1.2);
+  color: var(--color-accent-blue);
+}
+
+/**
+ * Input file caché
+ */
+.file-upload__input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/**
+ * Icône de l'upload
+ */
+.file-upload__icon {
+  font-size: 48px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-4);
+  transition: var(--transition-transform);
+}
+
+/**
+ * Texte principal
+ */
+.file-upload__text {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-2);
+}
+
+.file-upload__text strong {
+  color: var(--color-accent-blue);
+}
+
+/**
+ * Texte secondaire (formats acceptés)
+ */
+.file-upload__hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* ========================================================================
+ * 2. VARIANTES DE LA ZONE DE DROP
+ * ======================================================================== */
+
+/**
+ * Zone compacte
+ */
+.file-upload--compact .file-upload__dropzone {
+  padding: var(--spacing-4);
+  min-height: auto;
+  flex-direction: row;
+  gap: var(--spacing-4);
+}
+
+.file-upload--compact .file-upload__icon {
+  font-size: 24px;
+  margin-bottom: 0;
+}
+
+.file-upload--compact .file-upload__text {
+  margin-bottom: 0;
+}
+
+/**
+ * Zone succès
+ */
+.file-upload--success .file-upload__dropzone {
+  border-color: var(--color-status-success);
+  background-color: var(--color-status-success-bg);
+}
+
+.file-upload--success .file-upload__icon {
+  color: var(--color-status-success);
+}
+
+/**
+ * Zone erreur
+ */
+.file-upload--error .file-upload__dropzone {
+  border-color: var(--color-status-danger);
+  background-color: var(--color-status-danger-bg);
+}
+
+.file-upload--error .file-upload__icon {
+  color: var(--color-status-danger);
+}
+
+/* ========================================================================
+ * 3. LISTE DE FICHIERS
+ * ======================================================================== */
+
+/**
+ * Container de la liste de fichiers
+ */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-4);
+}
+
+/**
+ * Item de fichier
+ */
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  transition: var(--transition-all);
+}
+
+.file-item:hover {
+  border-color: var(--color-border-default);
+  box-shadow: var(--shadow-sm);
+}
+
+/**
+ * Icône du type de fichier
+ */
+.file-item__icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  color: var(--color-accent-blue);
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+}
+
+.file-item--csv .file-item__icon {
+  background-color: var(--color-status-success-bg);
+  color: var(--color-status-success);
+}
+
+/**
+ * Infos du fichier
+ */
+.file-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-item__name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-item__meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-1);
+}
+
+/**
+ * Statut du fichier
+ */
+.file-item__status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+}
+
+.file-item__status-icon {
+  font-size: var(--font-size-lg);
+}
+
+.file-item__status--success .file-item__status-icon {
+  color: var(--color-status-success);
+}
+
+.file-item__status--error .file-item__status-icon {
+  color: var(--color-status-danger);
+}
+
+.file-item__status--pending .file-item__status-icon {
+  color: var(--color-text-muted);
+}
+
+/**
+ * Bouton de suppression
+ */
+.file-item__remove {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: var(--transition-colors);
+  flex-shrink: 0;
+}
+
+.file-item__remove:hover {
+  background-color: var(--color-status-danger-bg);
+  color: var(--color-status-danger);
+}
+
+/* ========================================================================
+ * 4. FICHIERS CSV ATTENDUS (Liste spécifique)
+ * ======================================================================== */
+
+/**
+ * Liste des fichiers CSV requis
+ */
+.csv-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+/**
+ * Item CSV
+ */
+.csv-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  transition: var(--transition-all);
+}
+
+.csv-item--loaded {
+  background-color: var(--color-status-success-bg);
+  border: 1px solid var(--color-status-success-border);
+}
+
+.csv-item--error {
+  background-color: var(--color-status-danger-bg);
+  border: 1px solid var(--color-status-danger-border);
+}
+
+/**
+ * Indicateur de statut
+ */
+.csv-item__indicator {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.csv-item__indicator--pending {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-muted);
+}
+
+.csv-item__indicator--loaded {
+  background-color: var(--color-status-success);
+  color: var(--color-text-inverse);
+}
+
+.csv-item__indicator--error {
+  background-color: var(--color-status-danger);
+  color: var(--color-text-inverse);
+}
+
+/**
+ * Nom du fichier CSV attendu
+ */
+.csv-item__name {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.csv-item--loaded .csv-item__name {
+  color: var(--color-status-success);
+}
+
+/**
+ * Bouton de chargement individuel
+ */
+.csv-item__action {
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-accent-blue);
+  background: none;
+  border: 1px solid var(--color-accent-blue);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.csv-item__action:hover {
+  background-color: var(--color-accent-blue);
+  color: var(--color-text-inverse);
+}
+
+.csv-item--loaded .csv-item__action {
+  display: none;
+}
+
+/* ========================================================================
+ * 5. BARRE DE PROGRESSION
+ * ======================================================================== */
+
+/**
+ * Barre de progression d'upload
+ */
+.upload-progress {
+  margin-top: var(--spacing-4);
+}
+
+.upload-progress__bar {
+  width: 100%;
+  height: 4px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.upload-progress__fill {
+  height: 100%;
+  background-color: var(--color-accent-blue);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-normal);
+}
+
+.upload-progress__text {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* ========================================================================
+ * 6. STYLES ADDITIONNELS POUR LE COMPOSANT JS
+ * ======================================================================== */
+
+/**
+ * Texte secondaire (ou)
+ */
+.file-upload__subtext {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: var(--spacing-2) 0;
+}
+
+/**
+ * Label du bouton parcourir
+ */
+.file-upload__label {
+  cursor: pointer;
+  position: relative;
+}
+
+.file-upload__label .file-upload__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/**
+ * Loading state
+ */
+.file-upload--loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.file-upload__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  color: var(--color-text-secondary);
+}
+
+.loader--small {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+}
+
+/**
+ * Erreurs
+ */
+.file-upload__errors {
+  margin-top: var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.file-upload__error {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3);
+  background-color: var(--color-status-danger-bg);
+  border-radius: var(--radius-md);
+  color: var(--color-status-danger);
+  font-size: var(--font-size-sm);
+}
+
+.file-upload__error-icon {
+  flex-shrink: 0;
+}
+
+/**
+ * Checklist des fichiers
+ */
+.file-upload__checklist {
+  margin-top: var(--spacing-4);
+  border-top: 1px solid var(--color-border-light);
+  padding-top: var(--spacing-4);
+}
+
+.file-upload__checklist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-3);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.file-upload__checklist-count {
+  background-color: var(--color-bg-secondary);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+}
+
+.file-upload__checklist-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.file-upload__checklist-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  transition: var(--transition-all);
+}
+
+.file-upload__checklist-item--loaded {
+  background-color: var(--color-status-success-bg);
+}
+
+.file-upload__checklist-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.file-upload__checklist-item--loaded .file-upload__checklist-icon {
+  color: var(--color-status-success);
+  font-weight: var(--font-weight-bold);
+}
+
+.file-upload__checklist-name {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.file-upload__checklist-item--loaded .file-upload__checklist-name {
+  color: var(--color-status-success);
+}
+
+.file-upload__checklist-reset {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: var(--transition-colors);
+}
+
+.file-upload__checklist-reset:hover {
+  background-color: var(--color-status-danger-bg);
+  color: var(--color-status-danger);
+}
+
+/**
+ * Fichiers optionnels
+ */
+.file-upload__checklist-item--optional {
+  background-color: var(--color-bg-primary);
+  border: 1px dashed var(--color-border-default);
+}
+
+.file-upload__checklist-item--optional.file-upload__checklist-item--loaded {
+  background-color: var(--color-status-success-bg);
+  border-style: solid;
+  border-color: var(--color-status-success-border);
+}
+
+.file-upload__optional-tag {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-normal);
+  font-style: italic;
+}

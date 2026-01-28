@@ -1,0 +1,44 @@
+,Issues created,Issue key,Issue type,Issue created date,Issue status,Progress workdays,Issue closed date,Issue Sprints,Issue Sprint,Issue Story Points,Issue assignee
+All Issues,41,,,,,287.4532,,,,,
+Phoenix,41,,,,,287.4532,,,,,
+PHX-101 Mise en place de l'authentification OAuth,,PHX-101,Story,2024-10-02 09:15:00,Terminé,6.7823,2024-10-11 16:45:00,Sprint 10,(no sprint),8,Marie Dupont
+PHX-102 Création du composant Header,,PHX-102,Story,2024-10-03 10:30:00,Terminé,4.2156,2024-10-09 14:20:00,Sprint 10,(no sprint),3,Lucas Martin
+PHX-103 API endpoint GET /users,,PHX-103,Story,2024-10-01 08:00:00,Terminé,7.1234,2024-10-10 17:30:00,Sprint 10,(no sprint),5,Sophie Bernard
+PHX-104 Fix crash au login,1,PHX-104,Bug,2024-10-07 11:45:00,Terminé,0.8542,2024-10-08 10:15:00,Sprint 10,(no sprint),2,Lucas Martin
+PHX-105 Documentation API swagger,,PHX-105,Task,2024-10-04 14:00:00,Terminé,5.3421,2024-10-11 11:00:00,Sprint 10,(no sprint),2,Marie Dupont
+PHX-106 Refactoring service utilisateur,,PHX-106,Story,2024-10-08 09:00:00,Terminé,7.8956,"2024-10-18 16:00:00","Sprint 10,Sprint 11",(no sprint),5,Thomas Petit
+PHX-107 Création page dashboard,,PHX-107,Story,2024-10-14 10:00:00,Terminé,7.2341,2024-10-23 15:30:00,Sprint 11,(no sprint),8,Sophie Bernard
+PHX-108 Intégration chart.js,,PHX-108,Story,2024-10-15 11:00:00,Terminé,5.4523,2024-10-22 14:00:00,Sprint 11,(no sprint),5,Lucas Martin
+PHX-109 API endpoint POST /users,,PHX-109,Story,2024-10-14 09:30:00,Terminé,5.1234,2024-10-21 11:45:00,Sprint 11,(no sprint),5,Marie Dupont
+PHX-110 Fix affichage mobile header,1,PHX-110,Bug,2024-10-17 14:30:00,Terminé,0.5632,2024-10-18 09:15:00,Sprint 11,(no sprint),1,Lucas Martin
+PHX-111 Tests unitaires auth,,PHX-111,Task,2024-10-16 10:00:00,Terminé,6.2145,2024-10-24 16:30:00,Sprint 11,(no sprint),3,Thomas Petit
+PHX-112 Optimisation requêtes SQL,,PHX-112,Story,2024-10-21 08:30:00,Terminé,8.7632,"2024-11-01 17:00:00","Sprint 11,Sprint 12",(no sprint),5,Sophie Bernard
+PHX-113 Page profil utilisateur,,PHX-113,Story,2024-10-28 09:00:00,Terminé,7.1254,2024-11-06 14:30:00,Sprint 12,(no sprint),8,Marie Dupont
+PHX-114 Upload avatar,,PHX-114,Story,2024-10-29 10:15:00,Terminé,5.3421,2024-11-05 16:45:00,Sprint 12,(no sprint),5,Lucas Martin
+PHX-115 Notifications temps réel,,PHX-115,Story,2024-10-28 11:00:00,Terminé,9.4521,"2024-11-08 15:00:00","Sprint 12,Sprint 13",(no sprint),13,Thomas Petit
+PHX-116 Fix memory leak dashboard,1,PHX-116,Bug,2024-11-01 15:30:00,Terminé,2.1234,2024-11-04 10:00:00,Sprint 12,(no sprint),3,Sophie Bernard
+PHX-117 Cache Redis sessions,,PHX-117,Story,2024-10-30 09:45:00,Terminé,5.5678,2024-11-06 11:30:00,Sprint 12,(no sprint),5,Marie Dupont
+PHX-118 Migration base de données,,PHX-118,Task,2024-11-04 08:00:00,Terminé,0.9876,2024-11-05 09:30:00,Sprint 12,(no sprint),2,Lucas Martin
+PHX-119 Système de permissions,,PHX-119,Story,2024-11-11 10:00:00,Terminé,7.2345,2024-11-20 17:15:00,Sprint 13,(no sprint),8,Sophie Bernard
+PHX-120 Interface admin,,PHX-120,Story,2024-11-12 09:30:00,Terminé,7.4521,2024-11-21 16:00:00,Sprint 13,(no sprint),8,Marie Dupont
+PHX-121 Export CSV données,,PHX-121,Story,2024-11-13 11:15:00,Terminé,4.3256,2024-11-19 14:30:00,Sprint 13,(no sprint),5,Lucas Martin
+PHX-122 Fix pagination liste users,1,PHX-122,Bug,2024-11-14 14:00:00,Terminé,0.7854,2024-11-15 10:45:00,Sprint 13,(no sprint),2,Thomas Petit
+PHX-123 Audit logs,,PHX-123,Story,2024-11-15 10:30:00,Terminé,5.1234,2024-11-22 15:00:00,Sprint 13,(no sprint),5,Sophie Bernard
+PHX-124 Dark mode,,PHX-124,Story,2024-11-18 09:00:00,Terminé,12.3456,"2024-12-04 17:30:00","Sprint 13,Sprint 14",(no sprint),8,Lucas Martin
+PHX-125 Recherche avancée,,PHX-125,Story,2024-11-25 10:00:00,Terminé,7.1234,2024-12-04 15:45:00,Sprint 14,(no sprint),8,Marie Dupont
+PHX-126 Filtres dynamiques,,PHX-126,Story,2024-11-26 09:15:00,Terminé,5.2341,2024-12-03 14:00:00,Sprint 14,(no sprint),5,Thomas Petit
+PHX-127 API endpoint DELETE /users,,PHX-127,Story,2024-11-25 11:30:00,Terminé,5.0123,2024-12-02 16:30:00,Sprint 14,(no sprint),3,Sophie Bernard
+PHX-128 Fix timeout export,1,PHX-128,Bug,2024-11-28 15:45:00,Terminé,0.6543,2024-11-29 11:00:00,Sprint 14,(no sprint),2,Lucas Martin
+PHX-129 Tests E2E Cypress,,PHX-129,Task,2024-11-27 10:00:00,Terminé,6.4521,2024-12-05 17:00:00,Sprint 14,(no sprint),5,Marie Dupont
+PHX-130 Amélioration UX formulaires,,PHX-130,Story,2024-11-29 09:30:00,Terminé,5.3214,2024-12-06 14:15:00,Sprint 14,(no sprint),5,Thomas Petit
+PHX-131 SSO entreprise,,PHX-131,Story,2024-12-09 08:45:00,Terminé,7.5632,2024-12-18 16:30:00,Sprint 15,(no sprint),13,Sophie Bernard
+PHX-132 Import bulk utilisateurs,,PHX-132,Story,2024-12-10 10:30:00,Terminé,5.4123,2024-12-17 15:00:00,Sprint 15,(no sprint),8,Marie Dupont
+PHX-133 Webhooks notifications,,PHX-133,Story,2024-12-11 09:00:00,Terminé,6.2341,2024-12-19 14:45:00,Sprint 15,(no sprint),8,Lucas Martin
+PHX-134 Fix race condition SSO,1,PHX-134,Bug,2024-12-13 16:00:00,Terminé,2.1234,2024-12-16 11:30:00,Sprint 15,(no sprint),3,Thomas Petit
+PHX-135 Documentation utilisateur,,PHX-135,Task,2024-12-12 11:00:00,Terminé,4.5632,2024-12-18 17:15:00,Sprint 15,(no sprint),3,Sophie Bernard
+PHX-136 Monitoring Datadog,,PHX-136,Story,2024-12-16 10:15:00,Terminé,3.2145,2024-12-20 15:30:00,Sprint 15,(no sprint),5,Marie Dupont
+PHX-137 Performance API,,PHX-137,Story,2024-12-23 09:00:00,En cours,,,Sprint 16,Sprint 16,8,Lucas Martin
+PHX-138 Multi-tenant support,,PHX-138,Story,2024-12-23 10:30:00,En cours,,,Sprint 16,Sprint 16,13,Sophie Bernard
+PHX-139 Internationalisation i18n,,PHX-139,Story,2024-12-24 08:45:00,À faire,,,Sprint 16,Sprint 16,8,Thomas Petit
+PHX-140 Fix encoding UTF-8,1,PHX-140,Bug,2024-12-26 14:00:00,Terminé,0.4521,2024-12-27 09:30:00,Sprint 16,(no sprint),1,Marie Dupont
+PHX-141 Backup automatique,,PHX-141,Task,2024-12-24 11:15:00,En cours,,,Sprint 16,Sprint 16,5,Lucas Martin

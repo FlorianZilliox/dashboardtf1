@@ -1,0 +1,342 @@
+/**
+ * ==========================================================================
+ * BADGE.CSS - Styles des badges et tags
+ * ==========================================================================
+ *
+ * Styles pour :
+ * - Badges de statut
+ * - Tags
+ * - Pills (badges arrondis)
+ * - Indicateurs numériques
+ *
+ * Convention BEM : .badge, .badge--modifier
+ *
+ * ==========================================================================
+ */
+
+/* ========================================================================
+ * 1. BADGE DE BASE
+ * ======================================================================== */
+
+/**
+ * Badge standard
+ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+/**
+ * Badge avec icône
+ */
+.badge__icon {
+  font-size: 0.9em;
+}
+
+/* ========================================================================
+ * 2. VARIANTES DE COULEUR
+ * ======================================================================== */
+
+/**
+ * Badge par défaut (neutre)
+ */
+.badge--default {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+/**
+ * Badge primaire (accent)
+ */
+.badge--primary {
+  background-color: var(--color-status-info-bg);
+  color: var(--color-status-info);
+}
+
+/**
+ * Badge succès
+ */
+.badge--success {
+  background-color: var(--color-status-success-bg);
+  color: var(--color-status-success);
+}
+
+/**
+ * Badge avertissement
+ */
+.badge--warning {
+  background-color: var(--color-status-warning-bg);
+  color: var(--color-status-warning);
+}
+
+/**
+ * Badge danger
+ */
+.badge--danger {
+  background-color: var(--color-status-danger-bg);
+  color: var(--color-status-danger);
+}
+
+/**
+ * Badges colorés (palette pastel)
+ */
+.badge--blue {
+  background-color: var(--chart-color-1-alpha);
+  color: var(--color-accent-blue-dark);
+}
+
+.badge--teal {
+  background-color: var(--chart-color-2-alpha);
+  color: var(--color-accent-teal-dark);
+}
+
+.badge--coral {
+  background-color: var(--chart-color-3-alpha);
+  color: var(--color-accent-coral-dark);
+}
+
+.badge--yellow {
+  background-color: var(--chart-color-4-alpha);
+  color: var(--color-accent-yellow-dark);
+}
+
+.badge--purple {
+  background-color: var(--chart-color-5-alpha);
+  color: var(--color-accent-purple-dark);
+}
+
+.badge--green {
+  background-color: var(--chart-color-6-alpha);
+  color: var(--color-accent-green-dark);
+}
+
+.badge--orange {
+  background-color: var(--chart-color-7-alpha);
+  color: var(--color-accent-orange-dark);
+}
+
+/* ========================================================================
+ * 3. TAILLES DE BADGES
+ * ======================================================================== */
+
+/**
+ * Badge petit
+ */
+.badge--sm {
+  padding: 2px var(--spacing-1);
+  font-size: 10px;
+}
+
+/**
+ * Badge grand
+ */
+.badge--lg {
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--font-size-sm);
+}
+
+/* ========================================================================
+ * 4. FORMES DE BADGES
+ * ======================================================================== */
+
+/**
+ * Badge pill (très arrondi)
+ */
+.badge--pill {
+  border-radius: var(--radius-full);
+  padding-left: var(--spacing-3);
+  padding-right: var(--spacing-3);
+}
+
+/**
+ * Badge carré
+ */
+.badge--square {
+  border-radius: var(--radius-sm);
+}
+
+/**
+ * Badge point (dot indicator)
+ */
+.badge--dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: var(--radius-full);
+}
+
+.badge--dot.badge--success {
+  background-color: var(--color-status-success);
+}
+
+.badge--dot.badge--warning {
+  background-color: var(--color-status-warning);
+}
+
+.badge--dot.badge--danger {
+  background-color: var(--color-status-danger);
+}
+
+/* ========================================================================
+ * 5. BADGES DE STATUT SPRINT GOALS
+ * ======================================================================== */
+
+/**
+ * Badge "Atteint"
+ */
+.badge--goal-achieved {
+  background-color: var(--color-status-success-bg);
+  color: var(--color-status-success);
+}
+
+.badge--goal-achieved::before {
+  content: '\2713'; /* Check mark */
+  margin-right: var(--spacing-1);
+  font-weight: var(--font-weight-bold);
+}
+
+/**
+ * Badge "Partiel"
+ */
+.badge--goal-partial {
+  background-color: var(--color-status-warning-bg);
+  color: var(--color-status-warning);
+}
+
+.badge--goal-partial::before {
+  content: '\26A0'; /* Warning sign */
+  margin-right: var(--spacing-1);
+}
+
+/**
+ * Badge "Non atteint"
+ */
+.badge--goal-missed {
+  background-color: var(--color-status-danger-bg);
+  color: var(--color-status-danger);
+}
+
+.badge--goal-missed::before {
+  content: '\2717'; /* X mark */
+  margin-right: var(--spacing-1);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ========================================================================
+ * 6. TAG (avec suppression)
+ * ======================================================================== */
+
+/**
+ * Tag avec bouton de fermeture
+ */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-1) var(--spacing-3);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.tag__text {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: var(--transition-colors);
+  font-size: var(--font-size-xs);
+}
+
+.tag__remove:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+/* ========================================================================
+ * 7. INDICATEUR NUMÉRIQUE (Count badge)
+ * ======================================================================== */
+
+/**
+ * Badge compteur
+ */
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--spacing-2);
+  background-color: var(--color-accent-blue);
+  color: var(--color-text-inverse);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-full);
+}
+
+.count-badge--danger {
+  background-color: var(--color-status-danger);
+}
+
+.count-badge--warning {
+  background-color: var(--color-status-warning);
+}
+
+.count-badge--success {
+  background-color: var(--color-status-success);
+}
+
+/**
+ * Badge compteur positionné (sur un bouton/icône)
+ */
+.count-badge--positioned {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+}
+
+/* ========================================================================
+ * 8. BADGE AVEC BORDURE (Outline)
+ * ======================================================================== */
+
+.badge--outline {
+  background-color: transparent;
+  border: var(--border-width) solid currentColor;
+}
+
+.badge--outline.badge--success {
+  color: var(--color-status-success);
+  border-color: var(--color-status-success);
+}
+
+.badge--outline.badge--warning {
+  color: var(--color-status-warning);
+  border-color: var(--color-status-warning);
+}
+
+.badge--outline.badge--danger {
+  color: var(--color-status-danger);
+  border-color: var(--color-status-danger);
+}

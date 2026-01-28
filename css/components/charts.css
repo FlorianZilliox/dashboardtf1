@@ -1,0 +1,481 @@
+/**
+ * ==========================================================================
+ * CHARTS.CSS - Styles pour les graphiques Chart.js
+ * ==========================================================================
+ *
+ * Styles pour :
+ * - Containers de graphiques
+ * - Overrides Chart.js
+ * - Légendes personnalisées
+ * - Tooltips
+ * - Graphiques spécifiques (donut, bar, line)
+ *
+ * ==========================================================================
+ */
+
+/* ========================================================================
+ * 1. CONTAINER DE GRAPHIQUE
+ * ======================================================================== */
+
+/**
+ * Container standard pour un graphique
+ */
+.chart-wrapper,
+.chart-container {
+  position: relative;
+  width: 100%;
+  min-height: var(--height-chart, 250px);
+}
+
+/**
+ * Canvas du graphique
+ */
+.chart-wrapper canvas,
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/**
+ * Graphique avec header
+ */
+.chart-box {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.chart-box__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-4) var(--spacing-5);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.chart-box__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.chart-box__title-icon {
+  color: var(--color-accent-blue);
+}
+
+.chart-box__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.chart-box__body {
+  padding: var(--spacing-5);
+}
+
+/**
+ * Tailles de graphiques
+ */
+.chart-wrapper--sm {
+  min-height: var(--height-chart-small);
+}
+
+.chart-wrapper--lg {
+  min-height: 400px;
+}
+
+.chart-wrapper--auto {
+  min-height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+/* ========================================================================
+ * 2. LÉGENDE PERSONNALISÉE
+ * ======================================================================== */
+
+/**
+ * Container de légende externe
+ */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  justify-content: center;
+}
+
+.chart-legend--vertical {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/**
+ * Item de légende
+ */
+.chart-legend__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: default;
+}
+
+.chart-legend__item--clickable {
+  cursor: pointer;
+  transition: var(--transition-colors);
+}
+
+.chart-legend__item--clickable:hover {
+  color: var(--color-text-primary);
+}
+
+.chart-legend__item--hidden {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+/**
+ * Indicateur de couleur
+ */
+.chart-legend__color {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.chart-legend__color--line {
+  width: 20px;
+  height: 3px;
+  border-radius: var(--radius-full);
+}
+
+.chart-legend__color--dashed {
+  background: repeating-linear-gradient(
+    90deg,
+    currentColor 0,
+    currentColor 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+/**
+ * Label et valeur
+ */
+.chart-legend__label {
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chart-legend__value {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* ========================================================================
+ * 3. LIGNE DE RÉFÉRENCE (Benchmark)
+ * ======================================================================== */
+
+/**
+ * Indicateur de benchmark dans la légende
+ */
+.chart-benchmark {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.chart-benchmark__line {
+  width: 24px;
+  height: 2px;
+  background: var(--chart-color-reference);
+  border-style: dashed;
+}
+
+.chart-benchmark__value {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* ========================================================================
+ * 4. STYLES SPÉCIFIQUES - DONUT CHART
+ * ======================================================================== */
+
+/**
+ * Container du donut
+ */
+.donut-chart {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/**
+ * Centre du donut (texte central)
+ */
+.donut-chart__center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.donut-chart__center-value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.donut-chart__center-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-1);
+}
+
+/**
+ * Légende du donut (à droite)
+ */
+.donut-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-6);
+  align-items: center;
+}
+
+.donut-layout__chart {
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.donut-layout__legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.donut-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.donut-legend-item__color {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.donut-legend-item__info {
+  flex: 1;
+}
+
+.donut-legend-item__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.donut-legend-item__value {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* ========================================================================
+ * 5. STYLES SPÉCIFIQUES - BAR CHART
+ * ======================================================================== */
+
+/**
+ * Container avec valeur highlight
+ */
+.bar-chart-highlight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.bar-chart-highlight__value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-2);
+}
+
+.bar-chart-highlight__number {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.bar-chart-highlight__unit {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.bar-chart-highlight__trend {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-size: var(--font-size-sm);
+  margin-left: var(--spacing-4);
+}
+
+.bar-chart-highlight__trend--up {
+  color: var(--color-status-success);
+}
+
+.bar-chart-highlight__trend--down {
+  color: var(--color-status-danger);
+}
+
+/* ========================================================================
+ * 6. STYLES SPÉCIFIQUES - LINE CHART
+ * ======================================================================== */
+
+/**
+ * Container tendance
+ */
+.trend-chart {
+  position: relative;
+}
+
+/**
+ * Annotation de période
+ */
+.trend-chart__period {
+  position: absolute;
+  top: var(--spacing-2);
+  right: var(--spacing-2);
+  padding: var(--spacing-1) var(--spacing-2);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* ========================================================================
+ * 7. MINI CHARTS (Sparklines)
+ * ======================================================================== */
+
+/**
+ * Mini graphique inline
+ */
+.sparkline {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 24px;
+}
+
+.sparkline__bar {
+  width: 4px;
+  background-color: var(--color-accent-blue);
+  border-radius: 2px 2px 0 0;
+  transition: height var(--transition-normal);
+}
+
+.sparkline__bar:hover {
+  background-color: var(--color-accent-blue-dark);
+}
+
+/**
+ * Mini line chart
+ */
+.mini-trend {
+  width: 80px;
+  height: 24px;
+}
+
+/* ========================================================================
+ * 8. ÉTAT VIDE / CHARGEMENT DES GRAPHIQUES
+ * ======================================================================== */
+
+/**
+ * Placeholder de graphique en chargement
+ */
+.chart-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--height-chart);
+  gap: var(--spacing-4);
+}
+
+.chart-loading__spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-bg-secondary);
+  border-top-color: var(--color-accent-blue);
+  border-radius: 50%;
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+.chart-loading__text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/**
+ * Graphique sans données
+ */
+.chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--height-chart);
+  text-align: center;
+  padding: var(--spacing-6);
+}
+
+.chart-empty__icon {
+  font-size: 40px;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  margin-bottom: var(--spacing-3);
+}
+
+.chart-empty__text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* ========================================================================
+ * 9. RESPONSIVE
+ * ======================================================================== */
+
+@media (max-width: 768px) {
+  .donut-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .donut-layout__chart {
+    max-width: 150px;
+  }
+
+  .chart-legend {
+    gap: var(--spacing-2);
+  }
+
+  .chart-legend__item {
+    font-size: var(--font-size-xs);
+  }
+}

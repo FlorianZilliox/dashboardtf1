@@ -1,0 +1,380 @@
+/**
+ * ==========================================================================
+ * EMPTY-STATE.CSS - États vides et placeholders
+ * ==========================================================================
+ *
+ * Styles pour :
+ * - États vides (pas de données)
+ * - États de chargement
+ * - Messages d'information
+ * - Placeholders
+ *
+ * ==========================================================================
+ */
+
+/* ========================================================================
+ * 1. EMPTY STATE STANDARD
+ * ======================================================================== */
+
+/**
+ * Container de l'état vide
+ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-10) var(--spacing-6);
+  text-align: center;
+  min-height: 200px;
+}
+
+/**
+ * Icône de l'état vide
+ */
+.empty-state__icon {
+  font-size: 48px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-4);
+  opacity: 0.5;
+}
+
+/**
+ * Titre de l'état vide
+ */
+.empty-state__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-2);
+}
+
+/**
+ * Description de l'état vide
+ */
+.empty-state__description {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  max-width: 400px;
+  line-height: var(--line-height-normal);
+  margin-bottom: var(--spacing-6);
+}
+
+/**
+ * Action de l'état vide
+ */
+.empty-state__action {
+  margin-top: var(--spacing-4);
+}
+
+/* ========================================================================
+ * 2. VARIANTES D'ÉTAT VIDE
+ * ======================================================================== */
+
+/**
+ * État vide compact
+ */
+.empty-state--compact {
+  padding: var(--spacing-6) var(--spacing-4);
+  min-height: 120px;
+}
+
+.empty-state--compact .empty-state__icon {
+  font-size: 32px;
+  margin-bottom: var(--spacing-2);
+}
+
+.empty-state--compact .empty-state__title {
+  font-size: var(--font-size-base);
+}
+
+.empty-state--compact .empty-state__description {
+  font-size: var(--font-size-sm);
+}
+
+/**
+ * État vide avec fond
+ */
+.empty-state--boxed {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-xl);
+  border: 2px dashed var(--color-border-default);
+}
+
+/**
+ * État vide inline (dans un tableau par ex)
+ */
+.empty-state--inline {
+  flex-direction: row;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  min-height: auto;
+  text-align: left;
+}
+
+.empty-state--inline .empty-state__icon {
+  font-size: 24px;
+  margin-bottom: 0;
+}
+
+.empty-state--inline .empty-state__content {
+  flex: 1;
+}
+
+.empty-state--inline .empty-state__title {
+  margin-bottom: var(--spacing-1);
+}
+
+.empty-state--inline .empty-state__description {
+  margin-bottom: 0;
+}
+
+/* ========================================================================
+ * 3. ÉTATS SPÉCIFIQUES
+ * ======================================================================== */
+
+/**
+ * Pas de données CSV chargées
+ */
+.empty-state--no-data {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-xl);
+}
+
+.empty-state--no-data .empty-state__icon {
+  color: var(--color-accent-blue);
+  opacity: 0.7;
+}
+
+/**
+ * Sprint Goals non renseignés
+ */
+.empty-state--no-goals {
+  padding: var(--spacing-6);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  border-left: 3px solid var(--color-text-muted);
+}
+
+.empty-state--no-goals .empty-state__icon {
+  font-size: 24px;
+  margin-bottom: var(--spacing-2);
+}
+
+.empty-state--no-goals .empty-state__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+}
+
+/**
+ * Erreur de chargement
+ */
+.empty-state--error {
+  border-left: 3px solid var(--color-status-danger);
+}
+
+.empty-state--error .empty-state__icon {
+  color: var(--color-status-danger);
+  opacity: 1;
+}
+
+.empty-state--error .empty-state__title {
+  color: var(--color-status-danger);
+}
+
+/* ========================================================================
+ * 4. PLACEHOLDER (Skeleton loading)
+ * ======================================================================== */
+
+/**
+ * Base du placeholder animé
+ */
+.placeholder {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-secondary) 0%,
+    var(--color-bg-hover) 50%,
+    var(--color-bg-secondary) 100%
+  );
+  background-size: 200% 100%;
+  animation: placeholder-shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+@keyframes placeholder-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/**
+ * Placeholder pour texte
+ */
+.placeholder--text {
+  height: 16px;
+  width: 100%;
+}
+
+.placeholder--text-sm {
+  height: 12px;
+}
+
+.placeholder--text-lg {
+  height: 24px;
+}
+
+/**
+ * Placeholder pour titre
+ */
+.placeholder--title {
+  height: 32px;
+  width: 60%;
+}
+
+/**
+ * Placeholder pour métrique
+ */
+.placeholder--metric {
+  height: 48px;
+  width: 80px;
+}
+
+/**
+ * Placeholder pour graphique
+ */
+.placeholder--chart {
+  height: var(--height-chart);
+  width: 100%;
+}
+
+/**
+ * Placeholder pour card
+ */
+.placeholder-card {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* ========================================================================
+ * 5. LOADING STATE
+ * ======================================================================== */
+
+/**
+ * Container de chargement
+ */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-10);
+  gap: var(--spacing-4);
+}
+
+/**
+ * Spinner de chargement
+ */
+.loading-state__spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-bg-secondary);
+  border-top-color: var(--color-accent-blue);
+  border-radius: 50%;
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-state__text {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+/**
+ * Spinner inline (petit)
+ */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-bg-secondary);
+  border-top-color: var(--color-accent-blue);
+  border-radius: 50%;
+  animation: spinner-rotate 0.6s linear infinite;
+}
+
+.spinner--sm {
+  width: 12px;
+  height: 12px;
+  border-width: 1.5px;
+}
+
+.spinner--lg {
+  width: 24px;
+  height: 24px;
+  border-width: 3px;
+}
+
+/* ========================================================================
+ * 6. MESSAGES D'ÉTAT
+ * ======================================================================== */
+
+/**
+ * Message inline avec icône
+ */
+.status-message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+}
+
+.status-message__icon {
+  flex-shrink: 0;
+  font-size: var(--font-size-lg);
+}
+
+.status-message__content {
+  flex: 1;
+}
+
+.status-message__title {
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-1);
+}
+
+/**
+ * Variantes de messages
+ */
+.status-message--info {
+  background-color: var(--color-status-info-bg);
+  color: var(--color-status-info);
+}
+
+.status-message--success {
+  background-color: var(--color-status-success-bg);
+  color: var(--color-status-success);
+}
+
+.status-message--warning {
+  background-color: var(--color-status-warning-bg);
+  color: var(--color-status-warning);
+}
+
+.status-message--error {
+  background-color: var(--color-status-danger-bg);
+  color: var(--color-status-danger);
+}

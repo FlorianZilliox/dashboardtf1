@@ -1,0 +1,544 @@
+/**
+ * ==========================================================================
+ * GAUGE.CSS - Jauge de progression (Story Points)
+ * ==========================================================================
+ *
+ * Styles pour :
+ * - Jauge circulaire
+ * - Jauge linéaire (barre de progression)
+ * - Indicateurs de pourcentage
+ *
+ * Utilisé principalement pour afficher le ratio Story Points livrés/engagés
+ *
+ * ==========================================================================
+ */
+
+/* ========================================================================
+ * 1. JAUGE LINÉAIRE
+ * ======================================================================== */
+
+/**
+ * Container de la jauge linéaire
+ */
+.gauge {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/**
+ * Header de la jauge (labels + valeur)
+ */
+.gauge__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.gauge__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.gauge__value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+/**
+ * Track de la jauge (fond)
+ */
+.gauge__track {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.gauge__track--lg {
+  height: 12px;
+}
+
+.gauge__track--sm {
+  height: 4px;
+}
+
+/**
+ * Fill de la jauge (progression)
+ */
+.gauge__fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow) var(--ease-out);
+  background-color: var(--color-accent-blue);
+}
+
+/**
+ * Couleurs selon le pourcentage
+ */
+.gauge--success .gauge__fill {
+  background-color: var(--color-status-success);
+}
+
+.gauge--warning .gauge__fill {
+  background-color: var(--color-status-warning);
+}
+
+.gauge--danger .gauge__fill {
+  background-color: var(--color-status-danger);
+}
+
+/**
+ * Footer de la jauge (légende)
+ */
+.gauge__footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* ========================================================================
+ * 2. JAUGE AVEC GRADIENT
+ * ======================================================================== */
+
+/**
+ * Fill avec dégradé de couleurs
+ */
+.gauge--gradient .gauge__fill {
+  background: linear-gradient(
+    90deg,
+    var(--color-status-danger) 0%,
+    var(--color-status-warning) 50%,
+    var(--color-status-success) 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* ========================================================================
+ * 3. STORY POINTS GAUGE (Spécifique)
+ * ======================================================================== */
+
+/**
+ * Container principal pour l'affichage Story Points
+ */
+.sp-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-6);
+}
+
+/**
+ * Valeurs principales (XX engagés → YY livrés)
+ */
+.sp-gauge__values {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.sp-gauge__value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.sp-gauge__number {
+  font-size: var(--font-size-5xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.sp-gauge__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.sp-gauge__arrow {
+  font-size: var(--font-size-2xl);
+  color: var(--color-text-muted);
+}
+
+/**
+ * Pourcentage de réalisation
+ */
+.sp-gauge__percentage {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sp-gauge__percentage--success {
+  background-color: var(--color-status-success-bg);
+  color: var(--color-status-success);
+}
+
+.sp-gauge__percentage--warning {
+  background-color: var(--color-status-warning-bg);
+  color: var(--color-status-warning);
+}
+
+.sp-gauge__percentage--danger {
+  background-color: var(--color-status-danger-bg);
+  color: var(--color-status-danger);
+}
+
+/**
+ * Barre de progression Story Points
+ */
+.sp-gauge__bar {
+  width: 100%;
+  max-width: 200px;
+}
+
+/* ========================================================================
+ * 4. JAUGE CIRCULAIRE (Ring)
+ * ======================================================================== */
+
+/**
+ * Container de la jauge circulaire
+ */
+.ring-gauge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/**
+ * Tailles de la jauge circulaire
+ */
+.ring-gauge--sm {
+  width: 80px;
+  height: 80px;
+}
+
+.ring-gauge--md {
+  width: 120px;
+  height: 120px;
+}
+
+.ring-gauge--lg {
+  width: 160px;
+  height: 160px;
+}
+
+/**
+ * SVG de la jauge
+ */
+.ring-gauge__svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+/**
+ * Track (cercle de fond)
+ */
+.ring-gauge__track {
+  fill: none;
+  stroke: var(--color-bg-secondary);
+}
+
+/**
+ * Fill (cercle de progression)
+ */
+.ring-gauge__fill {
+  fill: none;
+  stroke: var(--color-accent-blue);
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--transition-slow) var(--ease-out);
+}
+
+.ring-gauge--success .ring-gauge__fill {
+  stroke: var(--color-status-success);
+}
+
+.ring-gauge--warning .ring-gauge__fill {
+  stroke: var(--color-status-warning);
+}
+
+.ring-gauge--danger .ring-gauge__fill {
+  stroke: var(--color-status-danger);
+}
+
+/**
+ * Contenu central (pourcentage)
+ */
+.ring-gauge__content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.ring-gauge__percentage {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.ring-gauge--lg .ring-gauge__percentage {
+  font-size: var(--font-size-4xl);
+}
+
+.ring-gauge__sublabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-1);
+}
+
+/* ========================================================================
+ * 5. GAUGE SEGMENTÉE
+ * ======================================================================== */
+
+/**
+ * Jauge avec segments distincts
+ */
+.segmented-gauge {
+  display: flex;
+  gap: var(--spacing-1);
+  width: 100%;
+}
+
+.segmented-gauge__segment {
+  flex: 1;
+  height: 8px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-normal);
+}
+
+.segmented-gauge__segment--filled {
+  background-color: var(--color-accent-blue);
+}
+
+.segmented-gauge--success .segmented-gauge__segment--filled {
+  background-color: var(--color-status-success);
+}
+
+.segmented-gauge--warning .segmented-gauge__segment--filled {
+  background-color: var(--color-status-warning);
+}
+
+.segmented-gauge--danger .segmented-gauge__segment--filled {
+  background-color: var(--color-status-danger);
+}
+
+/* ========================================================================
+ * 6. MINI GAUGE (Inline)
+ * ======================================================================== */
+
+/**
+ * Petite jauge inline pour tableaux/listes
+ */
+.mini-gauge {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.mini-gauge__bar {
+  width: 60px;
+  height: 4px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.mini-gauge__fill {
+  height: 100%;
+  background-color: var(--color-accent-blue);
+  border-radius: var(--radius-full);
+}
+
+.mini-gauge__value {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  min-width: 32px;
+}
+
+/* ========================================================================
+ * 7. STORY POINTS GAUGE COMPONENT
+ * ======================================================================== */
+
+/**
+ * Container principal du composant StoryPointsGauge
+ */
+.story-points-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.story-points-gauge__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.story-points-gauge__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.story-points-gauge__rate {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--radius-lg);
+}
+
+.story-points-gauge__rate--excellent {
+  background-color: var(--color-status-success-bg);
+  color: var(--color-status-success);
+}
+
+.story-points-gauge__rate--good {
+  background-color: var(--color-status-success-bg);
+  color: var(--color-status-success);
+}
+
+.story-points-gauge__rate--warning {
+  background-color: var(--color-status-warning-bg);
+  color: var(--color-status-warning);
+}
+
+.story-points-gauge__rate--danger {
+  background-color: var(--color-status-danger-bg);
+  color: var(--color-status-danger);
+}
+
+.story-points-gauge__visual {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.story-points-gauge__track {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  overflow: visible;
+}
+
+.story-points-gauge__delivered {
+  height: 100%;
+  border-radius: var(--radius-lg);
+  transition: width 0.5s ease-out;
+}
+
+.story-points-gauge__delivered--animated {
+  animation: gaugeGrow 0.8s ease-out;
+}
+
+@keyframes gaugeGrow {
+  from { width: 0; }
+}
+
+.story-points-gauge__marker {
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.story-points-gauge__marker-line {
+  width: 3px;
+  flex: 1;
+  background-color: var(--color-text-primary);
+  border-radius: var(--radius-full);
+}
+
+.story-points-gauge__marker-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-card);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  margin-top: var(--spacing-1);
+}
+
+.story-points-gauge__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  justify-content: center;
+}
+
+.story-points-gauge__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.story-points-gauge__legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+}
+
+.story-points-gauge__legend-color--committed {
+  background-color: var(--color-text-primary);
+  opacity: 0.3;
+}
+
+.story-points-gauge__details {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-6);
+  padding-top: var(--spacing-3);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.story-points-gauge__detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.story-points-gauge__detail-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.story-points-gauge__detail-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.story-points-gauge__detail-value--positive {
+  color: var(--color-status-success);
+}
+
+.story-points-gauge__detail-value--negative {
+  color: var(--color-status-danger);
+}

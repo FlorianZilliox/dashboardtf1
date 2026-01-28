@@ -1,0 +1,102 @@
+/**
+ * ==========================================================================
+ * NAVIGATION.CSS - Navigation principale (intégrée au header)
+ * ==========================================================================
+ */
+
+/* ========================================================================
+ * 1. CONTAINER PRINCIPAL
+ * ======================================================================== */
+
+.navigation {
+  display: flex;
+  align-items: center;
+}
+
+/* ========================================================================
+ * 2. TABS
+ * ======================================================================== */
+
+.navigation__tabs {
+  display: flex;
+  gap: var(--spacing-1);
+  background-color: var(--color-bg-secondary);
+  padding: var(--spacing-1);
+  border-radius: var(--radius-lg);
+}
+
+.navigation__tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2) var(--spacing-4);
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-all);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.navigation__tab:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.navigation__tab--active {
+  background-color: var(--color-accent-blue);
+  color: var(--color-text-inverse);
+}
+
+.navigation__tab--active:hover {
+  background-color: var(--color-accent-blue-dark);
+  color: var(--color-text-inverse);
+}
+
+/* ========================================================================
+ * 3. SECRET TAB (StarAc)
+ * ======================================================================== */
+
+.navigation__tab--secret {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  animation: secretReveal 0.5s ease-out;
+}
+
+.navigation__tab--secret:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  color: white;
+}
+
+.navigation__tab--secret.navigation__tab--active {
+  background: linear-gradient(135deg, #4c51bf 0%, #553c9a 100%);
+  box-shadow: 0 0 12px rgba(102, 126, 234, 0.5);
+}
+
+@keyframes secretReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ========================================================================
+ * 4. RESPONSIVE
+ * ======================================================================== */
+
+@media (max-width: 576px) {
+  .navigation__tab {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-xs);
+  }
+}

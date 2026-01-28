@@ -1,0 +1,453 @@
+/**
+ * ==========================================================================
+ * TOGGLE.CSS - Composants de sélection (toggles, switches, radios)
+ * ==========================================================================
+ *
+ * Styles pour :
+ * - Toggle button group (moyenne/médiane)
+ * - Switch on/off
+ * - Radio buttons customisés
+ * - Checkbox customisés
+ *
+ * ==========================================================================
+ */
+
+/* ========================================================================
+ * 1. TOGGLE BUTTON GROUP
+ * ======================================================================== */
+
+/**
+ * Groupe de toggles (ex: Moyenne | Médiane)
+ */
+.toggle-group {
+  display: inline-flex;
+  gap: 1px;
+  background-color: var(--color-bg-secondary);
+  padding: var(--spacing-1);
+  border-radius: var(--radius-lg);
+}
+
+/**
+ * Option du toggle
+ */
+.toggle-group__option {
+  position: relative;
+}
+
+.toggle-group__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-group__label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2) var(--spacing-4);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background-color: transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-all);
+  white-space: nowrap;
+}
+
+.toggle-group__label:hover {
+  color: var(--color-text-primary);
+}
+
+.toggle-group__input:checked + .toggle-group__label {
+  background-color: var(--color-bg-card);
+  color: var(--color-accent-blue);
+  box-shadow: var(--shadow-sm);
+}
+
+.toggle-group__input:focus-visible + .toggle-group__label {
+  outline: 2px solid var(--color-accent-blue);
+  outline-offset: 2px;
+}
+
+/**
+ * Toggle group compact
+ */
+.toggle-group--sm .toggle-group__label {
+  padding: var(--spacing-1) var(--spacing-3);
+  font-size: var(--font-size-xs);
+}
+
+/**
+ * Toggle group large
+ */
+.toggle-group--lg .toggle-group__label {
+  padding: var(--spacing-3) var(--spacing-5);
+  font-size: var(--font-size-base);
+}
+
+/**
+ * Toggle group avec icônes
+ */
+.toggle-group__icon {
+  margin-right: var(--spacing-2);
+  font-size: 1.1em;
+}
+
+/* ========================================================================
+ * 2. SWITCH (ON/OFF)
+ * ======================================================================== */
+
+/**
+ * Container du switch
+ */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  cursor: pointer;
+}
+
+/**
+ * Input caché
+ */
+.switch__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/**
+ * Track du switch
+ */
+.switch__track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+  transition: background-color var(--transition-normal);
+  border: 2px solid var(--color-border-default);
+}
+
+/**
+ * Thumb (bouton coulissant)
+ */
+.switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-text-muted);
+  border-radius: var(--radius-full);
+  transition: var(--transition-all);
+}
+
+/**
+ * États du switch
+ */
+.switch__input:checked + .switch__track {
+  background-color: var(--color-accent-blue);
+  border-color: var(--color-accent-blue);
+}
+
+.switch__input:checked + .switch__track .switch__thumb {
+  left: calc(100% - 18px);
+  background-color: var(--color-text-inverse);
+}
+
+.switch__input:focus-visible + .switch__track {
+  outline: 2px solid var(--color-accent-blue);
+  outline-offset: 2px;
+}
+
+.switch__input:disabled + .switch__track {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/**
+ * Label du switch
+ */
+.switch__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  user-select: none;
+}
+
+/**
+ * Switch compact
+ */
+.switch--sm .switch__track {
+  width: 36px;
+  height: 20px;
+}
+
+.switch--sm .switch__thumb {
+  width: 12px;
+  height: 12px;
+}
+
+.switch--sm .switch__input:checked + .switch__track .switch__thumb {
+  left: calc(100% - 14px);
+}
+
+/* ========================================================================
+ * 3. RADIO BUTTONS CUSTOMISÉS
+ * ======================================================================== */
+
+/**
+ * Container du radio
+ */
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  cursor: pointer;
+}
+
+/**
+ * Input caché
+ */
+.radio__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/**
+ * Cercle du radio
+ */
+.radio__circle {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg-card);
+  transition: var(--transition-all);
+  flex-shrink: 0;
+}
+
+/**
+ * Point central (checked)
+ */
+.radio__circle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-accent-blue);
+  border-radius: var(--radius-full);
+  transition: transform var(--transition-fast);
+}
+
+/**
+ * États du radio
+ */
+.radio__input:checked + .radio__circle {
+  border-color: var(--color-accent-blue);
+}
+
+.radio__input:checked + .radio__circle::after {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.radio__input:focus-visible + .radio__circle {
+  outline: 2px solid var(--color-accent-blue);
+  outline-offset: 2px;
+}
+
+.radio__input:disabled + .radio__circle {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/**
+ * Label du radio
+ */
+.radio__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  user-select: none;
+}
+
+/**
+ * Groupe de radios
+ */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.radio-group--horizontal {
+  flex-direction: row;
+  gap: var(--spacing-6);
+}
+
+/* ========================================================================
+ * 4. CHECKBOX CUSTOMISÉES
+ * ======================================================================== */
+
+/**
+ * Container du checkbox
+ */
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  cursor: pointer;
+}
+
+/**
+ * Input caché
+ */
+.checkbox__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/**
+ * Carré du checkbox
+ */
+.checkbox__box {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-card);
+  transition: var(--transition-all);
+  flex-shrink: 0;
+}
+
+/**
+ * Checkmark
+ */
+.checkbox__box::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--color-text-inverse);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform var(--transition-fast);
+}
+
+/**
+ * États du checkbox
+ */
+.checkbox__input:checked + .checkbox__box {
+  background-color: var(--color-accent-blue);
+  border-color: var(--color-accent-blue);
+}
+
+.checkbox__input:checked + .checkbox__box::after {
+  transform: rotate(45deg) scale(1);
+}
+
+.checkbox__input:focus-visible + .checkbox__box {
+  outline: 2px solid var(--color-accent-blue);
+  outline-offset: 2px;
+}
+
+.checkbox__input:disabled + .checkbox__box {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/**
+ * Label du checkbox
+ */
+.checkbox__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  user-select: none;
+}
+
+/* ========================================================================
+ * 5. TOGGLE CARDS (Sélection visuelle)
+ * ======================================================================== */
+
+/**
+ * Groupe de cards sélectionnables
+ */
+.toggle-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-4);
+}
+
+/**
+ * Card toggle
+ */
+.toggle-card {
+  position: relative;
+}
+
+.toggle-card__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-card__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-5);
+  background-color: var(--color-bg-card);
+  border: 2px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: var(--transition-all);
+  text-align: center;
+}
+
+.toggle-card__content:hover {
+  border-color: var(--color-accent-blue-light);
+}
+
+.toggle-card__input:checked + .toggle-card__content {
+  border-color: var(--color-accent-blue);
+  background-color: var(--color-bg-active);
+}
+
+.toggle-card__input:focus-visible + .toggle-card__content {
+  outline: 2px solid var(--color-accent-blue);
+  outline-offset: 2px;
+}
+
+.toggle-card__icon {
+  font-size: 24px;
+  color: var(--color-text-muted);
+}
+
+.toggle-card__input:checked + .toggle-card__content .toggle-card__icon {
+  color: var(--color-accent-blue);
+}
+
+.toggle-card__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.toggle-card__input:checked + .toggle-card__content .toggle-card__label {
+  color: var(--color-text-primary);
+}

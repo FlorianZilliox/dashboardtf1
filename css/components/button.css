@@ -1,0 +1,363 @@
+/**
+ * ==========================================================================
+ * BUTTON.CSS - Styles des boutons
+ * ==========================================================================
+ *
+ * Styles pour :
+ * - Boutons primaires, secondaires, ghost
+ * - Boutons avec icônes
+ * - Groupes de boutons
+ * - États (hover, active, disabled)
+ *
+ * Convention BEM : .btn, .btn--modifier
+ *
+ * ==========================================================================
+ */
+
+/* ========================================================================
+ * 1. BOUTON DE BASE
+ * ======================================================================== */
+
+/**
+ * Style de base pour tous les boutons
+ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-5);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  text-decoration: none;
+  border: var(--border-width-thick) solid transparent;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: var(--transition-all);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-accent-blue);
+  outline-offset: 2px;
+}
+
+/**
+ * État désactivé
+ */
+.btn:disabled,
+.btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ========================================================================
+ * 2. VARIANTES DE BOUTONS
+ * ======================================================================== */
+
+/**
+ * Bouton primaire (action principale)
+ */
+.btn--primary {
+  background-color: var(--color-accent-blue);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent-blue);
+}
+
+.btn--primary:hover {
+  background-color: var(--color-accent-blue-dark);
+  border-color: var(--color-accent-blue-dark);
+}
+
+.btn--primary:active {
+  background-color: var(--color-accent-blue-dark);
+  transform: translateY(1px);
+}
+
+/**
+ * Bouton secondaire (action secondaire)
+ */
+.btn--secondary {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-default);
+}
+
+.btn--secondary:hover {
+  background-color: var(--color-bg-hover);
+  border-color: var(--color-text-muted);
+}
+
+.btn--secondary:active {
+  background-color: var(--color-bg-hover);
+  transform: translateY(1px);
+}
+
+/**
+ * Bouton ghost (transparent)
+ */
+.btn--ghost {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border-color: transparent;
+}
+
+.btn--ghost:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.btn--ghost:active {
+  background-color: var(--color-bg-active);
+}
+
+/**
+ * Bouton outline (bordure uniquement)
+ */
+.btn--outline {
+  background-color: transparent;
+  color: var(--color-accent-blue);
+  border-color: var(--color-accent-blue);
+}
+
+.btn--outline:hover {
+  background-color: var(--color-accent-blue);
+  color: var(--color-text-inverse);
+}
+
+/**
+ * Bouton succès
+ */
+.btn--success {
+  background-color: var(--color-status-success);
+  color: var(--color-text-inverse);
+  border-color: var(--color-status-success);
+}
+
+.btn--success:hover {
+  background-color: #1da750;
+  border-color: #1da750;
+}
+
+/**
+ * Bouton danger
+ */
+.btn--danger {
+  background-color: var(--color-status-danger);
+  color: var(--color-text-inverse);
+  border-color: var(--color-status-danger);
+}
+
+.btn--danger:hover {
+  background-color: #dc3636;
+  border-color: #dc3636;
+}
+
+/**
+ * Bouton warning
+ */
+.btn--warning {
+  background-color: var(--color-status-warning);
+  color: var(--color-text-inverse);
+  border-color: var(--color-status-warning);
+}
+
+.btn--warning:hover {
+  background-color: #e08e0a;
+  border-color: #e08e0a;
+}
+
+/* ========================================================================
+ * 3. TAILLES DE BOUTONS
+ * ======================================================================== */
+
+/**
+ * Bouton petit
+ */
+.btn--sm {
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-md);
+}
+
+/**
+ * Bouton grand
+ */
+.btn--lg {
+  padding: var(--spacing-4) var(--spacing-6);
+  font-size: var(--font-size-lg);
+  border-radius: var(--radius-lg);
+}
+
+/**
+ * Bouton pleine largeur
+ */
+.btn--block {
+  width: 100%;
+}
+
+/* ========================================================================
+ * 4. BOUTONS AVEC ICÔNES
+ * ======================================================================== */
+
+/**
+ * Icône dans un bouton
+ */
+.btn__icon {
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.btn__icon--left {
+  margin-right: var(--spacing-1);
+}
+
+.btn__icon--right {
+  margin-left: var(--spacing-1);
+}
+
+/**
+ * Bouton icône uniquement (carré)
+ */
+.btn--icon-only {
+  padding: var(--spacing-3);
+  aspect-ratio: 1;
+}
+
+.btn--icon-only.btn--sm {
+  padding: var(--spacing-2);
+}
+
+.btn--icon-only.btn--lg {
+  padding: var(--spacing-4);
+}
+
+/* ========================================================================
+ * 5. GROUPES DE BOUTONS
+ * ======================================================================== */
+
+/**
+ * Groupe de boutons (horizontal)
+ */
+.btn-group {
+  display: inline-flex;
+  gap: 0;
+}
+
+.btn-group .btn {
+  border-radius: 0;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: var(--radius-lg);
+  border-bottom-left-radius: var(--radius-lg);
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+}
+
+.btn-group .btn:not(:last-child) {
+  border-right-width: 0;
+}
+
+.btn-group .btn:hover {
+  z-index: 1;
+}
+
+/**
+ * Groupe de boutons avec espacement
+ */
+.btn-group--spaced {
+  gap: var(--spacing-2);
+}
+
+.btn-group--spaced .btn {
+  border-radius: var(--radius-lg);
+  border-right-width: var(--border-width-thick);
+}
+
+/* ========================================================================
+ * 6. ÉTATS DE CHARGEMENT
+ * ======================================================================== */
+
+/**
+ * Bouton en état de chargement
+ */
+.btn--loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.btn--loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: btn-spinner 0.6s linear infinite;
+}
+
+.btn--primary.btn--loading::after,
+.btn--success.btn--loading::after,
+.btn--danger.btn--loading::after {
+  border-color: var(--color-text-inverse);
+  border-right-color: transparent;
+}
+
+@keyframes btn-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========================================================================
+ * 7. BOUTONS SPÉCIAUX
+ * ======================================================================== */
+
+/**
+ * Bouton flottant (FAB - Floating Action Button)
+ */
+.btn--fab {
+  position: fixed;
+  bottom: var(--spacing-6);
+  right: var(--spacing-6);
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-sticky);
+}
+
+.btn--fab:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-xl);
+}
+
+/**
+ * Bouton lien (ressemble à un lien)
+ */
+.btn--link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-accent-blue);
+  font-weight: var(--font-weight-normal);
+}
+
+.btn--link:hover {
+  text-decoration: underline;
+  background: none;
+}

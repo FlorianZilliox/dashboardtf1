@@ -1,0 +1,299 @@
+/**
+ * ==========================================================================
+ * SHARED.CSS - Styles pour la page secrète des contributeurs partagés
+ * ==========================================================================
+ */
+
+/* ==========================================================================
+   PAGE LAYOUT
+   ========================================================================== */
+
+.shared-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #fff;
+  padding: var(--spacing-6);
+}
+
+.shared-page__header {
+  text-align: center;
+  margin-bottom: var(--spacing-8);
+  padding: var(--spacing-6);
+}
+
+.shared-page__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-2);
+}
+
+.shared-page__title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.shared-page__badge {
+  background: linear-gradient(90deg, #ff0844, #ffb199);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.shared-page__subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.shared-page__subtitle strong {
+  color: #00d4ff;
+}
+
+/* ==========================================================================
+   CONTENT
+   ========================================================================== */
+
+.shared-page__content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.shared-page__loading,
+.shared-page__error,
+.shared-page__empty {
+  text-align: center;
+  padding: var(--spacing-8);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+}
+
+.shared-page__loading .loader {
+  margin: 0 auto var(--spacing-4);
+}
+
+.shared-page__error {
+  border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+.shared-page__error .btn {
+  margin-top: var(--spacing-4);
+}
+
+/* ==========================================================================
+   SUMMARY STATS
+   ========================================================================== */
+
+.shared-page__summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.shared-page__stat {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-5);
+  text-align: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.shared-page__stat:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.shared-page__stat-value {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #00d4ff;
+  line-height: 1;
+  margin-bottom: var(--spacing-2);
+}
+
+.shared-page__stat-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+   TABLE
+   ========================================================================== */
+
+.shared-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.shared-table thead {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.shared-table th {
+  padding: var(--spacing-4);
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shared-table__subheader th {
+  padding: var(--spacing-2) var(--spacing-4);
+  font-weight: 500;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.shared-table td {
+  padding: var(--spacing-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.shared-table__row {
+  transition: background 0.2s;
+}
+
+.shared-table__row:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.shared-table__row--no-data {
+  opacity: 0.5;
+}
+
+.shared-table__name {
+  font-weight: 600;
+}
+
+.shared-table__teams {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-1);
+}
+
+.shared-table__total {
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.shared-table__total td {
+  border-bottom: none;
+  padding: var(--spacing-5) var(--spacing-4);
+}
+
+/* ==========================================================================
+   TEAM TAGS
+   ========================================================================== */
+
+.team-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   RELIABILITY BADGE
+   ========================================================================== */
+
+.reliability-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.reliability-badge--reliable {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.reliability-badge--unreliable {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+
+.shared-page__footer {
+  text-align: center;
+  margin-top: var(--spacing-8);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shared-page__footer p {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.875rem;
+}
+
+/* ==========================================================================
+   UTILITIES
+   ========================================================================== */
+
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .shared-page {
+    padding: var(--spacing-4);
+  }
+
+  .shared-page__title {
+    font-size: 1.75rem;
+  }
+
+  .shared-table {
+    font-size: 0.875rem;
+  }
+
+  .shared-table th,
+  .shared-table td {
+    padding: var(--spacing-2) var(--spacing-3);
+  }
+}

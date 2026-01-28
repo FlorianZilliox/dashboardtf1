@@ -1,0 +1,13 @@
+Status,Period,Avg Workdays,Cycle %
+To Do (12),Previous week,0.8,0.12
+To Do (45),Last 12 weeks,1.2,0.15
+In Progress (8),Previous week,2.1,0.32
+In Progress (38),Last 12 weeks,2.4,0.30
+Code Review (6),Previous week,0.9,0.14
+Code Review (32),Last 12 weeks,1.1,0.14
+Testing (5),Previous week,1.4,0.21
+Testing (28),Last 12 weeks,1.6,0.20
+Ready to Deploy (4),Previous week,0.5,0.08
+Ready to Deploy (22),Last 12 weeks,0.6,0.08
+Done (7),Previous week,0.9,0.13
+Done (41),Last 12 weeks,1.0,0.13

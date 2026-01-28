@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard de Sprint Review pour équipes Agile - Visualisation des métriques et forecast">
+  <meta name="theme-color" content="#2563eb">
+
+  <title>Sprint Review Dashboard</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <!-- Design System -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+
+  <!-- Components -->
+  <link rel="stylesheet" href="css/components/card.css">
+  <link rel="stylesheet" href="css/components/button.css">
+  <link rel="stylesheet" href="css/components/input.css">
+  <link rel="stylesheet" href="css/components/badge.css">
+  <link rel="stylesheet" href="css/components/gauge.css">
+  <link rel="stylesheet" href="css/components/empty-state.css">
+  <link rel="stylesheet" href="css/components/toggle.css">
+  <link rel="stylesheet" href="css/components/file-upload.css">
+  <link rel="stylesheet" href="css/components/charts.css">
+  <link rel="stylesheet" href="css/components/loader.css">
+  <link rel="stylesheet" href="css/components/navigation.css">
+
+  <!-- Pages -->
+  <link rel="stylesheet" href="css/pages/admin.css">
+  <link rel="stylesheet" href="css/pages/review.css">
+  <link rel="stylesheet" href="css/pages/forecast.css">
+  <link rel="stylesheet" href="css/pages/shared.css">
+  <link rel="stylesheet" href="css/pages/howmany.css">
+
+  <!-- External Libraries -->
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Chart.js Annotation Plugin (pour les lignes de benchmark) -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <!-- html2canvas (pour l'export PDF) -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- jsPDF (pour l'export PDF) -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <!-- Application Container -->
+  <div id="app" class="app">
+
+    <!-- Header avec Navigation intégrée -->
+    <header id="app-header" class="header">
+      <div class="header__brand">
+        <h1 class="header__title">Sprint Review</h1>
+      </div>
+
+      <!-- Navigation intégrée dans le header -->
+      <nav id="app-nav" class="header__nav">
+        <!-- Navigation Component sera monté ici -->
+      </nav>
+
+      <div class="header__info">
+        <span class="header__sprint" id="header-sprint-info">
+          <!-- Rempli dynamiquement -->
+        </span>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="app-main" class="main">
+      <!-- Les pages seront montées ici -->
+
+      <!-- Loading State Initial -->
+      <div class="app-loader" id="app-initial-loader">
+        <div class="loader"></div>
+        <p>Chargement...</p>
+      </div>
+    </main>
+
+    <!-- Notifications Container -->
+    <div id="app-notifications" class="notifications-container" aria-live="polite">
+      <!-- Notifications dynamiques -->
+    </div>
+
+  </div>
+
+  <!-- Module JavaScript -->
+  <script type="module" src="js/main.js"></script>
+
+  <!-- Script d'initialisation (enlever le loader initial) -->
+  <script>
+    // Enlever le loader initial une fois que l'app est chargée
+    document.addEventListener('DOMContentLoaded', function() {
+      const loader = document.getElementById('app-initial-loader');
+      if (loader) {
+        setTimeout(function() {
+          loader.style.opacity = '0';
+          setTimeout(function() {
+            loader.remove();
+          }, 300);
+        }, 100);
+      }
+    });
+
+    // Enregistrer le plugin d'annotation pour Chart.js
+    // Le plugin peut être exposé sous différents noms globaux
+    if (window.Chart) {
+      var annotationPlugin = window['chartjs-plugin-annotation'] ||
+                             window.ChartAnnotation ||
+                             (Chart.registry && Chart.registry.plugins.get('annotation'));
+
+      if (annotationPlugin && typeof Chart.register === 'function') {
+        try {
+          Chart.register(annotationPlugin);
+          console.log('[Chart.js] Plugin annotation enregistré');
+        } catch (e) {
+          console.warn('[Chart.js] Plugin annotation déjà enregistré ou erreur:', e);
+        }
+      }
+    }
+  </script>
+
+  <!-- Styles inline pour le loader initial (avant le chargement CSS) -->
+  <style>
+    .app-loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f8fafc;
+      z-index: 9999;
+      transition: opacity 0.3s ease;
+    }
+
+    .app-loader .loader {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .app-loader p {
+      margin-top: 16px;
+      color: #64748b;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</body>
+</html>
