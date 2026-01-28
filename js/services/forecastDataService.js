@@ -55,18 +55,22 @@ function getCurrentSprintNumber(tickets) {
 }
 
 /**
- * Obtient les N derniers sprints complets
- * @param {Array} tickets
- * @param {number} count - Nombre de sprints à récupérer
- * @returns {number[]} - Numéros de sprints
+ * Obtient les N derniers sprints avec des tickets fermés
+ *
+ * RÈGLE MÉTIER : Un sprint est "complet" (disponible pour analyse) dès qu'il
+ * a au moins 1 ticket fermé. Cela permet d'inclure le sprint en cours dans
+ * les analyses dès que des tickets y sont terminés.
+ *
+ * @param {Array} tickets - Liste des tickets
+ * @param {number} count - Nombre de sprints à récupérer (défaut: 6)
+ * @returns {number[]} - Numéros de sprints (ordre croissant)
  */
 function getLastCompletedSprints(tickets, count = CONFIG.SPRINTS_TO_ANALYZE) {
-  const currentSprint = getCurrentSprintNumber(tickets);
+  // aggregateBySprint retourne uniquement les sprints avec des tickets fermés
   const sprintData = aggregateBySprint(tickets);
 
-  // Exclure le sprint en cours
+  // Prendre les N derniers sprints (triés par numéro décroissant, puis inversés)
   const completedSprints = sprintData
-    .filter(s => s.sprint < currentSprint)
     .map(s => s.sprint)
     .sort((a, b) => b - a) // Décroissant
     .slice(0, count);

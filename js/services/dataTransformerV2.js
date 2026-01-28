@@ -107,7 +107,9 @@ function filterSprintsUpTo(sprintData, targetSprint) {
 }
 
 /**
- * Retourne la liste des sprints disponibles (complets uniquement)
+ * Retourne la liste des sprints disponibles
+ * RÈGLE : Un sprint est disponible dès qu'il a au moins 1 ticket fermé
+ * (aggregateBySprint ne retourne que les sprints avec des tickets fermés)
  * @param {Array} tickets
  * @returns {Array} - [{ sprint: number, label: string }]
  */
@@ -116,15 +118,11 @@ export function getAvailableSprints(tickets) {
     return [];
   }
 
-  const currentSprint = getCurrentSprintNumber(tickets);
+  // aggregateBySprint retourne uniquement les sprints qui ont des tickets fermés
   const sprintData = aggregateBySprint(tickets);
 
-  // Exclure le sprint en cours
-  const completed = sprintData
-    .filter(s => s.sprint < currentSprint)
-    .map(s => ({ sprint: s.sprint, label: s.label }));
-
-  return completed;
+  // Retourner tous les sprints avec au moins 1 ticket fermé
+  return sprintData.map(s => ({ sprint: s.sprint, label: s.label }));
 }
 
 // =========================================================================
@@ -153,21 +151,21 @@ export function transformAllDataV2(rawData, selectedSprint = null, selectedTeams
     return result;
   }
 
-  // Déterminer le sprint en cours (pour exclure les sprints incomplets)
-  const currentSprint = getCurrentSprintNumber(rawData.tickets);
-
-  // Agréger les tickets par sprint
+  // Agréger les tickets par sprint (ne retourne que les sprints avec des tickets fermés)
   const sprintData = aggregateBySprint(rawData.tickets);
 
-  // Déterminer le sprint cible (sélectionné ou dernier complet par défaut)
-  const targetSprint = selectedSprint || (currentSprint - 1);
+  // Sprint cible = sprint sélectionné ou le dernier sprint avec des tickets fermés
+  const maxSprintWithClosed = sprintData.length > 0
+    ? Math.max(...sprintData.map(s => s.sprint))
+    : null;
+  const targetSprint = selectedSprint || maxSprintWithClosed;
 
   // Filtrer pour ne garder que les 6 sprints jusqu'au sprint cible
   const displayedSprints = filterSprintsUpTo(sprintData, targetSprint);
 
   // Debug info
-  console.log('[V2 Transformer] Sprint en cours:', currentSprint);
   console.log('[V2 Transformer] Sprint cible:', targetSprint);
+  console.log('[V2 Transformer] Sprint max avec tickets fermés:', maxSprintWithClosed);
   console.log('[V2 Transformer] Sprints disponibles:', sprintData.map(s => s.label));
   console.log('[V2 Transformer] Sprints affichés:', displayedSprints.map(s => s.label));
 

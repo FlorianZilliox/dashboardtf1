@@ -71,8 +71,147 @@
         <span class="header__sprint" id="header-sprint-info">
           <!-- Rempli dynamiquement -->
         </span>
+        <button class="header__info-btn" id="rgpd-info-btn" title="Conformité RGPD" aria-label="Informations RGPD">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
       </div>
     </header>
+
+    <!-- Modal RGPD -->
+    <div class="modal-overlay" id="rgpd-modal">
+      <div class="modal" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+        <div class="modal__header">
+          <h2 class="modal__title" id="modal-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            Conformité RGPD
+          </h2>
+          <button class="modal__close" id="rgpd-modal-close" aria-label="Fermer">&times;</button>
+        </div>
+        <div class="modal__body">
+          <h2>1. Résumé exécutif</h2>
+          <p>Le Sprint Review Dashboard est une application <strong>100% client-side</strong> (sans serveur) qui traite des données exportées depuis Jira pour visualiser les métriques d'équipe Agile. L'application présente un <strong>risque RGPD faible</strong> en raison de son architecture locale.</p>
+
+          <table>
+            <thead>
+              <tr><th>Critère</th><th>Statut</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Minimisation des données</td><td>Conforme</td></tr>
+              <tr><td>Stockage local uniquement</td><td>Conforme</td></tr>
+              <tr><td>Pas de transfert externe</td><td>Conforme</td></tr>
+              <tr><td>Traitement de données personnelles</td><td>Conforme</td></tr>
+              <tr><td>Droit à l'effacement</td><td>Conforme</td></tr>
+            </tbody>
+          </table>
+
+          <h2>2. Données traitées</h2>
+          <h3>Données non personnelles</h3>
+          <ul>
+            <li>Identifiants de tickets (PHX-101, etc.)</li>
+            <li>Types de tickets (Story, Bug, Task)</li>
+            <li>Statuts (To Do, In Progress, Done)</li>
+            <li>Story Points, Noms de sprints</li>
+            <li>Dates de création/résolution</li>
+            <li>Temps passé dans chaque statut</li>
+          </ul>
+
+          <h3>Données personnelles (Article 4 RGPD)</h3>
+          <table>
+            <thead>
+              <tr><th>Donnée</th><th>Catégorie</th><th>Sensibilité</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Nom de l'assigné</td><td>Donnée d'identification</td><td>Faible</td></tr>
+              <tr><td>Performance individuelle</td><td>Donnée dérivée</td><td>Moyenne</td></tr>
+              <tr><td>Vélocité par contributeur</td><td>Donnée dérivée</td><td>Moyenne</td></tr>
+            </tbody>
+          </table>
+          <p><strong>Note</strong> : Ces données sont dissimulées et accessibles avec un code pour en limiter l'accès.</p>
+
+          <h2>3. Architecture et flux de données</h2>
+          <pre>┌─────────────────────────────────────────────────────────────┐
+│                     NAVIGATEUR LOCAL                        │
+│  ┌─────────┐    ┌──────────────────┐    ┌───────────────┐  │
+│  │ Fichier │───>│ Sprint Review    │───>│ localStorage  │  │
+│  │ CSV     │    │ Dashboard        │    │ (optionnel)   │  │
+│  └─────────┘    └──────────────────┘    └───────────────┘  │
+│                          │                                  │
+│                          v                                  │
+│                 ┌──────────────────┐                        │
+│                 │ Affichage écran  │                        │
+│                 └──────────────────┘                        │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ✗ Aucun transfert réseau
+                           ✗ Aucun serveur externe
+                           ✗ Aucun cookie tiers</pre>
+
+          <h3>Points clés</h3>
+          <ul>
+            <li><strong>Pas de backend</strong> : Aucune donnée n'est envoyée à un serveur</li>
+            <li><strong>Pas de tracking</strong> : Aucun outil d'analytics</li>
+            <li><strong>Pas de cookies tiers</strong> : Uniquement localStorage navigateur</li>
+            <li><strong>Données éphémères</strong> : Les données sont perdues à la fermeture (sauf snapshot explicite)</li>
+          </ul>
+
+          <h2>4. Conformité par article RGPD</h2>
+          <h3>Article 5 - Principes de traitement</h3>
+          <table>
+            <thead>
+              <tr><th>Principe</th><th>Conformité</th><th>Commentaire</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Licéité, loyauté, transparence</td><td>Conforme</td><td>Traitement local, visible par l'utilisateur</td></tr>
+              <tr><td>Limitation des finalités</td><td>Conforme</td><td>Uniquement pour Sprint Review</td></tr>
+              <tr><td>Minimisation des données</td><td>Conforme</td><td>Seules les données Jira nécessaires</td></tr>
+              <tr><td>Exactitude</td><td>Conforme</td><td>Données importées directement de Jira</td></tr>
+              <tr><td>Limitation de conservation</td><td>Conforme</td><td>Données non persistées par défaut</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Article 17 - Droit à l'effacement</h3>
+          <table>
+            <thead>
+              <tr><th>Mécanisme</th><th>Disponible</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Fermer le navigateur</td><td>Données en mémoire effacées</td></tr>
+              <tr><td>Vider le localStorage</td><td>Snapshots supprimés</td></tr>
+              <tr><td>Ne pas importer les données</td><td>Aucun traitement</td></tr>
+            </tbody>
+          </table>
+
+          <h2>5. Points d'attention</h2>
+          <h3>Affichage des performances individuelles</h3>
+          <p>Les sections "Simulation par contributeur" et "Simuler des absences" affichent des métriques individuelles.</p>
+          <p><strong>Mesures en place</strong> :</p>
+          <ul>
+            <li>Ces sections sont <strong>cachées par défaut</strong></li>
+            <li>Un code secret est nécessaire pour les afficher</li>
+            <li>Elles peuvent être masquées rapidement</li>
+          </ul>
+          <p><strong>Recommandations</strong> :</p>
+          <ul>
+            <li>Utiliser ces fonctionnalités uniquement pour la planification d'équipe</li>
+            <li>Ne pas utiliser pour l'évaluation individuelle de performance</li>
+            <li>Informer l'équipe de l'existence de ces métriques</li>
+          </ul>
+
+          <h2>6. Conclusion</h2>
+          <p>Le Sprint Review Dashboard est <strong>conforme aux exigences RGPD</strong> grâce à son architecture 100% locale qui élimine les risques liés au transfert et au stockage distant de données.</p>
+          <p><strong>Principales recommandations</strong> :</p>
+          <ol>
+            <li><strong>Documenter</strong> le traitement dans le registre de l'entreprise</li>
+            <li><strong>Informer</strong> les équipes de l'utilisation de leurs données</li>
+            <li><strong>Utiliser avec discernement</strong> les fonctionnalités de simulation individuelle</li>
+          </ol>
+        </div>
+      </div>
+    </div>
 
     <!-- Main Content -->
     <main id="app-main" class="main">
@@ -107,6 +246,41 @@
             loader.remove();
           }, 300);
         }, 100);
+      }
+
+      // Modal RGPD
+      const rgpdBtn = document.getElementById('rgpd-info-btn');
+      const rgpdModal = document.getElementById('rgpd-modal');
+      const rgpdClose = document.getElementById('rgpd-modal-close');
+
+      if (rgpdBtn && rgpdModal) {
+        // Ouvrir la modal
+        rgpdBtn.addEventListener('click', function() {
+          rgpdModal.classList.add('modal-overlay--visible');
+          document.body.style.overflow = 'hidden';
+        });
+
+        // Fermer avec le bouton X
+        rgpdClose.addEventListener('click', function() {
+          rgpdModal.classList.remove('modal-overlay--visible');
+          document.body.style.overflow = '';
+        });
+
+        // Fermer en cliquant sur l'overlay
+        rgpdModal.addEventListener('click', function(e) {
+          if (e.target === rgpdModal) {
+            rgpdModal.classList.remove('modal-overlay--visible');
+            document.body.style.overflow = '';
+          }
+        });
+
+        // Fermer avec Escape
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && rgpdModal.classList.contains('modal-overlay--visible')) {
+            rgpdModal.classList.remove('modal-overlay--visible');
+            document.body.style.overflow = '';
+          }
+        });
       }
     });
 

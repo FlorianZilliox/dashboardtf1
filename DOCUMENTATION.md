@@ -97,6 +97,10 @@ Un ticket est considéré comme **ajout mid-sprint** s'il n'apparaît que dans u
 
 Un sprint apparaît dans le sélecteur **uniquement s'il a au moins un ticket fermé**.
 
+> **Exemple** : Le Sprint 17 démarre le lundi. Dès qu'un ticket est fermé (même le jour 1),
+> le Sprint 17 devient disponible dans le sélecteur, même si le sprint n'est pas terminé.
+> Cela permet de consulter les données partielles en cours de sprint.
+
 ### 2.6 Sprint Forecast
 
 Le sprint Forecast = **Sprint Review sélectionné + 1**
@@ -145,7 +149,10 @@ Cohérent entre la page Review et la page Forecast.
 
 #### Paramètres
 - **Itérations** : 10 000 simulations
-- **Sprints analysés** : 6 derniers sprints complets
+- **Sprints analysés** : 6 derniers sprints avec au moins 1 ticket fermé
+
+> **Note** : Un sprint est considéré comme "disponible" dès qu'il a au moins 1 ticket fermé,
+> même s'il est encore en cours. Cela permet d'analyser les données partielles du sprint actuel.
 
 #### Algorithme
 Pour chaque simulation :
