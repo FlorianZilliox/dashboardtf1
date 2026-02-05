@@ -53,7 +53,10 @@ export default class ReviewPage extends Component {
       isExporting: false,
       throughputMetric: 'tickets', // 'tickets' ou 'storyPoints'
       showPearson: false, // Carte corrélation cachée par défaut
-      showExportMenu: false // Menu d'export dropdown
+      showBurndown: false, // Burndown chart caché par défaut
+      showExportMenu: false, // Menu d'export dropdown
+      excludedSprintsThroughput: [],  // Indices des sprints exclus du calcul Throughput
+      excludedSprintsCycleTime: []    // Indices des sprints exclus du calcul Cycle Time
     };
 
     // Écouter le déverrouillage de la corrélation Pearson
@@ -61,9 +64,14 @@ export default class ReviewPage extends Component {
       this.setState({ showPearson: true });
     });
 
+    // Écouter le déverrouillage du Burndown
+    eventBus.on('secret:unlock:burndown', () => {
+      this.setState({ showBurndown: true });
+    });
+
     // Écouter le masquage de tous les secrets
     eventBus.on('secret:hide-all', () => {
-      this.setState({ showPearson: false });
+      this.setState({ showPearson: false, showBurndown: false });
     });
 
     // S'abonner aux changements du store
@@ -192,7 +200,16 @@ export default class ReviewPage extends Component {
       const chartLabel = isStoryPoints ? 'Story Points livrés' : 'Tickets fermés';
       const yAxisLabel = isStoryPoints ? 'Story Points' : 'Tickets';
 
+      // Calculer les benchmarks pour les données sélectionnées
+      const benchmarkAvg = Math.round((chartData.reduce((a, b) => a + b, 0) / chartData.length) * 10) / 10;
+      const sortedData = [...chartData].sort((a, b) => a - b);
+      const mid = Math.floor(sortedData.length / 2);
+      const benchmarkMedian = sortedData.length % 2 === 0
+        ? (sortedData[mid - 1] + sortedData[mid]) / 2
+        : sortedData[mid];
+
       const ctx = throughputCanvas.getContext('2d');
+      const defaultBgColor = 'rgba(37, 99, 235, 0.8)';
       this.components.throughputChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -200,7 +217,7 @@ export default class ReviewPage extends Component {
           datasets: [{
             label: chartLabel,
             data: chartData,
-            backgroundColor: 'rgba(37, 99, 235, 0.8)',
+            backgroundColor: chartData.map(() => defaultBgColor),
             borderColor: 'rgba(37, 99, 235, 1)',
             borderWidth: 1
           }]
@@ -215,11 +232,49 @@ export default class ReviewPage extends Component {
             }
           },
           plugins: {
-            legend: { display: false }
+            legend: { display: false },
+            annotation: {
+              annotations: {
+                avgLine: {
+                  type: 'line',
+                  yMin: benchmarkAvg,
+                  yMax: benchmarkAvg,
+                  borderColor: 'rgba(239, 68, 68, 0.8)',
+                  borderWidth: 2,
+                  borderDash: [5, 5],
+                  label: {
+                    display: true,
+                    content: `Moy: ${benchmarkAvg}`,
+                    position: 'start',
+                    backgroundColor: 'rgba(239, 68, 68, 0.8)'
+                  }
+                },
+                medianLine: {
+                  type: 'line',
+                  yMin: benchmarkMedian,
+                  yMax: benchmarkMedian,
+                  borderColor: 'rgba(139, 92, 246, 0.8)',
+                  borderWidth: 2,
+                  borderDash: [5, 5],
+                  label: {
+                    display: true,
+                    content: `Méd: ${benchmarkMedian}`,
+                    position: 'end',
+                    backgroundColor: 'rgba(139, 92, 246, 0.8)'
+                  }
+                }
+              }
+            }
+          },
+          onClick: (event, elements) => {
+            if (elements.length > 0) {
+              const index = elements[0].index;
+              this._handleToggleSprintExclusion('throughput', index);
+            }
           }
         }
       });
-      console.log('[ReviewPage] Graphique Throughput créé');
+      console.log('[ReviewPage] Graphique Throughput créé avec benchmarks');
     }
 
     // Cycle Time - création directe du graphique Chart.js
@@ -230,6 +285,7 @@ export default class ReviewPage extends Component {
       }
 
       const ctx = cycleTimeCanvas.getContext('2d');
+      const defaultCtBgColor = 'rgba(20, 184, 166, 0.8)';
       this.components.cycleTimeChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -237,7 +293,7 @@ export default class ReviewPage extends Component {
           datasets: [{
             label: 'Cycle Time (jours)',
             data: metrics.cycleTime.values,
-            backgroundColor: 'rgba(20, 184, 166, 0.8)',
+            backgroundColor: metrics.cycleTime.values.map(() => defaultCtBgColor),
             borderColor: 'rgba(20, 184, 166, 1)',
             borderWidth: 1
           }]
@@ -284,6 +340,12 @@ export default class ReviewPage extends Component {
                   }
                 }
               }
+            }
+          },
+          onClick: (event, elements) => {
+            if (elements.length > 0) {
+              const index = elements[0].index;
+              this._handleToggleSprintExclusion('cycleTime', index);
             }
           }
         }
@@ -524,6 +586,135 @@ export default class ReviewPage extends Component {
       });
       console.log('[ReviewPage] WIP chart créé avec:', metrics.wip.sprints, metrics.wip.values);
     }
+
+    // Burndown Chart - line chart avec progression réelle vs idéale
+    const burndownCanvas = document.getElementById('burndown-chart');
+    if (burndownCanvas && metrics.burndown && metrics.burndown.actualSP?.length) {
+      if (this.components.burndownChart) {
+        this.components.burndownChart.destroy();
+      }
+
+      const ctx = burndownCanvas.getContext('2d');
+      const burndown = metrics.burndown;
+
+      // Identifier les weekends pour les zones ombrées
+      // Regrouper les weekends consécutifs (sam-dim) en une seule zone
+      const weekendAnnotations = {};
+      if (burndown.days) {
+        let weekendStart = null;
+        let weekendStartIndex = null;
+
+        burndown.days.forEach((day, index) => {
+          const dayOfWeek = day.getDay(); // 0 = dimanche, 6 = samedi
+          const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+          if (isWeekend && weekendStart === null) {
+            // Début d'un weekend
+            weekendStart = burndown.labels[index];
+            weekendStartIndex = index;
+          } else if (!isWeekend && weekendStart !== null) {
+            // Fin du weekend (jour précédent)
+            weekendAnnotations[`weekend_${weekendStartIndex}`] = {
+              type: 'box',
+              xMin: weekendStartIndex - 0.5,
+              xMax: index - 0.5,
+              yMin: 0,
+              yMax: Math.max(...burndown.actualSP, ...burndown.idealSP) * 1.1,
+              backgroundColor: 'rgba(148, 163, 184, 0.12)',
+              borderWidth: 0,
+              drawTime: 'beforeDatasetsDraw'
+            };
+            weekendStart = null;
+            weekendStartIndex = null;
+          }
+        });
+
+        // Si le sprint finit un weekend
+        if (weekendStart !== null) {
+          weekendAnnotations[`weekend_${weekendStartIndex}`] = {
+            type: 'box',
+            xMin: weekendStartIndex - 0.5,
+            xMax: burndown.days.length - 0.5,
+            yMin: 0,
+            yMax: Math.max(...burndown.actualSP, ...burndown.idealSP) * 1.1,
+            backgroundColor: 'rgba(148, 163, 184, 0.12)',
+            borderWidth: 0,
+            drawTime: 'beforeDatasetsDraw'
+          };
+        }
+      }
+
+      this.components.burndownChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: burndown.labels,
+          datasets: [
+            {
+              label: 'SP restants',
+              data: burndown.actualSP,
+              borderColor: 'rgba(37, 99, 235, 1)',
+              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+              borderWidth: 3,
+              tension: 0,
+              fill: true,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: 'rgba(37, 99, 235, 1)'
+            },
+            {
+              label: 'Idéal',
+              data: burndown.idealSP,
+              borderColor: 'rgba(156, 163, 175, 0.8)',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              tension: 0,
+              fill: false,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  if (context.datasetIndex === 0) {
+                    return `${value} SP restants`;
+                  }
+                  return `Idéal: ${value} SP`;
+                }
+              }
+            },
+            annotation: {
+              annotations: weekendAnnotations
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Story Points'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Jours du sprint'
+              }
+            }
+          }
+        }
+      });
+      console.log('[ReviewPage] Burndown chart créé avec:', burndown.labels.length, 'jours,', Object.keys(weekendAnnotations).length, 'weekends');
+    }
   }
 
   /**
@@ -537,6 +728,28 @@ export default class ReviewPage extends Component {
     const avgWip = sprintMetrics?.wip?.avgWip || 0;
 
     return `1 membre de ${teamName} a en moyenne ${avgWip.toFixed(1)} tickets entre In Progress et Terminé`;
+  }
+
+  /**
+   * Retourne le sous-titre du graphique Burndown
+   * @returns {string}
+   * @private
+   */
+  _getBurndownSubtitle() {
+    const { sprintMetrics } = this.state;
+    const burndown = sprintMetrics?.burndown;
+
+    if (!burndown) {
+      return 'Progression du sprint';
+    }
+
+    const { initialSP, midSprintSP, spDelivered, completionRate } = burndown;
+
+    if (midSprintSP > 0) {
+      return `${initialSP} SP initiaux + ${midSprintSP} SP ajoutés mid-sprint → ${spDelivered} livrés (${completionRate}%)`;
+    }
+
+    return `${initialSP} SP engagés → ${spDelivered} livrés (${completionRate}%)`;
   }
 
   /**
@@ -706,6 +919,18 @@ export default class ReviewPage extends Component {
               <canvas id="wip-chart"></canvas>
             </div>
           </section>
+
+          <!-- Burndown Chart (secret: "burn") -->
+          ${this.state.showBurndown ? `
+          <section class="chart-section">
+            <h4 class="chart-section__title">Burndown*</h4>
+            <p class="chart-section__subtitle">${this._getBurndownSubtitle()}</p>
+            <div class="chart-section__chart" style="height: 250px;">
+              <canvas id="burndown-chart"></canvas>
+            </div>
+            <p class="chart-section__footnote">*Approximatif : basé sur les dates de fermeture Jira, pas sur les daily updates</p>
+          </section>
+          ` : ''}
         </div>
       </div>
     `;
@@ -1482,10 +1707,103 @@ export default class ReviewPage extends Component {
           : 'Tickets fermés par sprint';
       }
 
-      // Recréer le graphique avec les nouvelles données
+      // Réinitialiser les exclusions et recréer le graphique
+      this.state.excludedSprintsThroughput = [];
       if (this.state.sprintMetrics) {
         this._initializeCharts(this.state.sprintMetrics);
       }
     }
+  }
+
+  /**
+   * Toggle l'exclusion d'un sprint du calcul des benchmarks
+   * @param {string} chartType - 'throughput' ou 'cycleTime'
+   * @param {number} index - Index de la barre cliquée
+   * @private
+   */
+  _handleToggleSprintExclusion(chartType, index) {
+    const stateKey = chartType === 'throughput' ? 'excludedSprintsThroughput' : 'excludedSprintsCycleTime';
+    const excluded = [...this.state[stateKey]];
+
+    const pos = excluded.indexOf(index);
+    if (pos > -1) {
+      excluded.splice(pos, 1);  // Réinclure
+    } else {
+      excluded.push(index);     // Exclure
+    }
+
+    this.state[stateKey] = excluded;
+    this._updateChartWithExclusions(chartType);
+  }
+
+  /**
+   * Met à jour le graphique avec les exclusions (recalcul moyenne/médiane)
+   * @param {string} chartType - 'throughput' ou 'cycleTime'
+   * @private
+   */
+  _updateChartWithExclusions(chartType) {
+    const metrics = this.state.sprintMetrics;
+    const chart = chartType === 'throughput'
+      ? this.components.throughputChart
+      : this.components.cycleTimeChart;
+
+    if (!chart || !metrics) return;
+
+    const excluded = chartType === 'throughput'
+      ? this.state.excludedSprintsThroughput
+      : this.state.excludedSprintsCycleTime;
+
+    // Pour Throughput, utiliser les bonnes données selon la métrique sélectionnée
+    let values;
+    if (chartType === 'throughput') {
+      const isStoryPoints = this.state.throughputMetric === 'storyPoints';
+      values = isStoryPoints
+        ? (metrics.throughput.storyPointsValues || [])
+        : metrics.throughput.values;
+    } else {
+      values = metrics.cycleTime.values;
+    }
+
+    // Filtrer les valeurs non exclues
+    const includedValues = values.filter((_, i) => !excluded.includes(i));
+
+    if (includedValues.length === 0) return;
+
+    // Recalculer moyenne et médiane
+    const avg = includedValues.reduce((a, b) => a + b, 0) / includedValues.length;
+    const sorted = [...includedValues].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0
+      ? (sorted[mid - 1] + sorted[mid]) / 2
+      : sorted[mid];
+
+    // Arrondir
+    const avgRounded = Math.round(avg * 10) / 10;
+    const medianRounded = Math.round(median * 10) / 10;
+
+    // Mettre à jour les annotations
+    const suffix = chartType === 'cycleTime' ? 'j' : '';
+    const avgLabel = chartType === 'cycleTime' ? 'Moy. globale' : 'Moy';
+    const medLabel = chartType === 'cycleTime' ? 'Méd. globale' : 'Méd';
+
+    chart.options.plugins.annotation.annotations.avgLine.yMin = avgRounded;
+    chart.options.plugins.annotation.annotations.avgLine.yMax = avgRounded;
+    chart.options.plugins.annotation.annotations.avgLine.label.content = `${avgLabel}: ${avgRounded}${suffix}`;
+
+    chart.options.plugins.annotation.annotations.medianLine.yMin = medianRounded;
+    chart.options.plugins.annotation.annotations.medianLine.yMax = medianRounded;
+    chart.options.plugins.annotation.annotations.medianLine.label.content = `${medLabel}: ${medianRounded}${suffix}`;
+
+    // Mise à jour visuelle des barres exclues (grisées)
+    const defaultColor = chartType === 'throughput'
+      ? 'rgba(37, 99, 235, 0.8)'
+      : 'rgba(20, 184, 166, 0.8)';
+    const excludedColor = 'rgba(200, 200, 200, 0.4)';
+
+    chart.data.datasets[0].backgroundColor = values.map((_, i) =>
+      excluded.includes(i) ? excludedColor : defaultColor
+    );
+
+    chart.update();
   }
 }

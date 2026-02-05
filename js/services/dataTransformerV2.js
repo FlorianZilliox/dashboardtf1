@@ -17,6 +17,7 @@
 
 import { aggregateBySprint, calculateStats, aggregateTimeInStatus } from './csvParserV2.js';
 import monteCarloService from './monteCarloService.js';
+import { calculateBurndown } from './burndownService.js';
 
 // =========================================================================
 // PEARSON CORRELATION
@@ -144,11 +145,32 @@ export function transformAllDataV2(rawData, selectedSprint = null, selectedTeams
     bugs: null,
     storyPoints: null,  // Story Points calculés depuis le CSV
     wip: null,          // WIP individuel moyen
-    correlation: null   // Corrélation Pearson SP/Cycle Time
+    correlation: null,  // Corrélation Pearson SP/Cycle Time
+    burndown: null      // Burndown chart du sprint sélectionné
   };
 
   if (!rawData.tickets || rawData.tickets.length === 0) {
     return result;
+  }
+
+  // Enrichir les tickets avec le Cycle Time réel depuis Time in Status
+  if (rawData.timeInStatus?.tickets) {
+    const tisMap = new Map(rawData.timeInStatus.tickets.map(t => [t.key, t]));
+    let enrichedCount = 0;
+
+    rawData.tickets.forEach(ticket => {
+      const tisTicket = tisMap.get(ticket.key);
+      if (tisTicket && tisTicket.totalTime > 0) {
+        // Remplacer cycleTime par le temps réel (totalTime)
+        ticket.cycleTime = tisTicket.totalTime;
+        // Stocker les détails par statut pour référence
+        ticket.statusTimes = tisTicket.statusTimes;
+        enrichedCount++;
+      }
+      // Si pas de correspondance, garder le cycleTime original (Progress workdays)
+    });
+
+    console.log(`[V2 Transformer] Cycle Time enrichi depuis Time in Status: ${enrichedCount}/${rawData.tickets.length} tickets`);
   }
 
   // Agréger les tickets par sprint (ne retourne que les sprints avec des tickets fermés)
@@ -192,6 +214,11 @@ export function transformAllDataV2(rawData, selectedSprint = null, selectedTeams
   // Corrélation Pearson Story Points / Cycle Time
   result.correlation = transformCorrelationV2(displayedSprints, rawData.tickets);
 
+  // Burndown chart pour le sprint sélectionné
+  if (targetSprint) {
+    result.burndown = calculateBurndown(rawData.tickets, targetSprint);
+  }
+
   return result;
 }
 
@@ -223,6 +250,15 @@ function transformThroughputV2(sprintData) {
   const sprintCount = sprints.length || 1;
   const benchmark = Math.round(totalClosedInPeriod / sprintCount);
 
+  // Benchmarks pour les lignes horizontales (comme Cycle Time)
+  const allValues = sprints.map(s => s.value);
+  const benchmarkAvg = Math.round((allValues.reduce((a, b) => a + b, 0) / allValues.length) * 10) / 10;
+  const sortedValues = [...allValues].sort((a, b) => a - b);
+  const mid = Math.floor(sortedValues.length / 2);
+  const benchmarkMedian = sortedValues.length % 2 === 0
+    ? (sortedValues[mid - 1] + sortedValues[mid]) / 2
+    : sortedValues[mid];
+
   // Dernier sprint
   const lastSprint = sprints.length > 0 ? sprints[sprints.length - 1] : null;
   const lastSprintAdditions = lastSprint?.midSprintAdditions || [];
@@ -240,6 +276,8 @@ function transformThroughputV2(sprintData) {
     values: sprints.map(s => s.value),
     storyPointsValues: sprints.map(s => s.storyPoints), // Story Points par sprint
     benchmark: benchmark,
+    benchmarkAvg: benchmarkAvg,       // Moyenne pour ligne horizontale
+    benchmarkMedian: benchmarkMedian, // Médiane pour ligne horizontale
     history: sprints,
     midSprintAdditions: lastSprintAdditions,
     midSprintCount: lastSprintAdditions.length,

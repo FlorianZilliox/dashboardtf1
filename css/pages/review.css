@@ -947,6 +947,14 @@
   margin: 0 0 var(--spacing-4) 0;
 }
 
+.chart-section__footnote {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  margin: var(--spacing-2) 0 0 0;
+  text-align: right;
+}
+
 .chart-section__chart {
   flex: 1;
   min-height: 250px;

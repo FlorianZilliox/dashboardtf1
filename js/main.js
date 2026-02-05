@@ -239,6 +239,12 @@ class App {
         sequence: ['p', 'e', 'a', 'r'],
         message: 'Corrélation Pearson débloquée !',
         event: 'secret:unlock:pearson'
+      },
+      {
+        name: 'burndown',
+        sequence: ['b', 'u', 'r', 'n'],
+        message: 'Burndown Chart débloqué !',
+        event: 'secret:unlock:burndown'
       }
     ];
 

@@ -279,7 +279,7 @@ export default class ForecastPage extends Component {
         ${isExporting ? '<div class="forecast-page__overlay"><div class="loader"></div></div>' : ''}
 
         <!-- Modal explicative Monte Carlo -->
-        <div class="modal-overlay" data-modal="monte-carlo-help" style="display: none;">
+        <div class="modal-overlay" data-modal="monte-carlo-help">
           <div class="modal">
             <div class="modal__header">
               <h3 class="modal__title">Simulation Monte Carlo</h3>
@@ -570,7 +570,8 @@ export default class ForecastPage extends Component {
   _handleShowHelp() {
     const modal = this.container?.querySelector('[data-modal="monte-carlo-help"]');
     if (modal) {
-      modal.style.display = 'flex';
+      modal.classList.add('modal-overlay--visible');
+      document.body.style.overflow = 'hidden';
     }
   }
 
@@ -581,7 +582,8 @@ export default class ForecastPage extends Component {
   _handleCloseModal() {
     const modal = this.container?.querySelector('[data-modal="monte-carlo-help"]');
     if (modal) {
-      modal.style.display = 'none';
+      modal.classList.remove('modal-overlay--visible');
+      document.body.style.overflow = '';
     }
   }
 

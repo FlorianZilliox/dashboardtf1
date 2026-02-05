@@ -18,6 +18,8 @@
  * ==========================================================================
  */
 
+import { getSprintDates } from '../utils/sprintDates.js';
+
 // =========================================================================
 // PARSING DU FICHIER UNIFIÉ
 // =========================================================================
@@ -350,7 +352,7 @@ function getWeekStartDate(week, year) {
  * @param {Date} referenceDate - Date dans le sprint (typiquement maxDate)
  * @returns {Date} - Le lundi de la semaine paire qui démarre le sprint
  */
-function getSprintStartMonday(referenceDate) {
+export function getSprintStartMonday(referenceDate) {
   const date = new Date(referenceDate);
 
   // Trouver le lundi de la semaine courante
@@ -531,17 +533,9 @@ export function aggregateBySprint(tickets) {
   const sprintArray = Array.from(sprintMap.values());
 
   sprintArray.forEach(sprintData => {
-    // Skip si pas de date de référence (sprint sans tickets fermés)
-    if (!sprintData.maxDate) {
-      console.log(`[DEBUG] Sprint ${sprintData.sprint} - pas de tickets fermés, skip mid-sprint detection`);
-      return;
-    }
-
-    // Calculer le lundi de début du sprint à partir de maxDate
-    // maxDate est proche de la fin du sprint (2 semaines)
-    const sprintStart = getSprintStartMonday(sprintData.maxDate);
-
-    console.log(`[DEBUG] Sprint ${sprintData.sprint} - total embarqués: ${sprintData.totalTickets}, fermés: ${sprintData.closed}, SP engagés: ${sprintData.storyPointsCommitted}, SP livrés: ${sprintData.storyPointsDelivered}, lundi:`, sprintStart.toISOString().split('T')[0]);
+    // Obtenir la date de début du sprint depuis la convention fixe (sprintDates.js)
+    // Cela garantit la cohérence avec burndownService
+    const { start: sprintStart } = getSprintDates(sprintData.sprint);
 
     // Trouver les tickets single-sprint créés APRÈS le lundi de lancement
     const singleSprintTickets = tickets.filter(t =>
@@ -566,8 +560,6 @@ export function aggregateBySprint(tickets) {
         });
       }
     });
-
-    console.log(`[DEBUG] Sprint ${sprintData.sprint} - ajouts mid-sprint:`, sprintData.midSprintAdditions.length);
   });
 
   // Trier par numéro de sprint
