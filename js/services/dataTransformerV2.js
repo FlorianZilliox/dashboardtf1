@@ -153,12 +153,19 @@ export function transformAllDataV2(rawData, selectedSprint = null, selectedTeams
     return result;
   }
 
+  // FILTRER PAR ÉQUIPE si des équipes sont sélectionnées
+  let filteredTickets = rawData.tickets;
+  if (selectedTeams && selectedTeams.length > 0) {
+    filteredTickets = rawData.tickets.filter(t => selectedTeams.includes(t.team));
+    console.log(`[V2 Transformer] Filtrage par équipe: ${filteredTickets.length}/${rawData.tickets.length} tickets (équipes: ${selectedTeams.join(', ')})`);
+  }
+
   // Enrichir les tickets avec le Cycle Time réel depuis Time in Status
   if (rawData.timeInStatus?.tickets) {
     const tisMap = new Map(rawData.timeInStatus.tickets.map(t => [t.key, t]));
     let enrichedCount = 0;
 
-    rawData.tickets.forEach(ticket => {
+    filteredTickets.forEach(ticket => {
       const tisTicket = tisMap.get(ticket.key);
       if (tisTicket && tisTicket.totalTime > 0) {
         // Remplacer cycleTime par le temps réel (totalTime)
@@ -170,11 +177,11 @@ export function transformAllDataV2(rawData, selectedSprint = null, selectedTeams
       // Si pas de correspondance, garder le cycleTime original (Progress workdays)
     });
 
-    console.log(`[V2 Transformer] Cycle Time enrichi depuis Time in Status: ${enrichedCount}/${rawData.tickets.length} tickets`);
+    console.log(`[V2 Transformer] Cycle Time enrichi depuis Time in Status: ${enrichedCount}/${filteredTickets.length} tickets`);
   }
 
   // Agréger les tickets par sprint (ne retourne que les sprints avec des tickets fermés)
-  const sprintData = aggregateBySprint(rawData.tickets);
+  const sprintData = aggregateBySprint(filteredTickets);
 
   // Sprint cible = sprint sélectionné ou le dernier sprint avec des tickets fermés
   const maxSprintWithClosed = sprintData.length > 0
@@ -198,10 +205,10 @@ export function transformAllDataV2(rawData, selectedSprint = null, selectedTeams
   result.cycleTime = transformCycleTimeV2(displayedSprints);
 
   // Bugs
-  result.bugs = transformBugsV2(displayedSprints, rawData.tickets);
+  result.bugs = transformBugsV2(displayedSprints, filteredTickets);
 
   // Story Points (calculés depuis le CSV avec Monte Carlo pour la vélocité recommandée)
-  result.storyPoints = transformStoryPointsV2(displayedSprints, rawData.tickets);
+  result.storyPoints = transformStoryPointsV2(displayedSprints, filteredTickets);
 
   // Time in Status (nouveau format avec filtrage par équipe/sprint)
   if (rawData.timeInStatus) {
@@ -209,14 +216,14 @@ export function transformAllDataV2(rawData, selectedSprint = null, selectedTeams
   }
 
   // WIP individuel moyen
-  result.wip = transformWipV2(displayedSprints, rawData.tickets);
+  result.wip = transformWipV2(displayedSprints, filteredTickets);
 
   // Corrélation Pearson Story Points / Cycle Time
-  result.correlation = transformCorrelationV2(displayedSprints, rawData.tickets);
+  result.correlation = transformCorrelationV2(displayedSprints, filteredTickets);
 
   // Burndown chart pour le sprint sélectionné
   if (targetSprint) {
-    result.burndown = calculateBurndown(rawData.tickets, targetSprint);
+    result.burndown = calculateBurndown(filteredTickets, targetSprint);
   }
 
   return result;
