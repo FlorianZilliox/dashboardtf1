@@ -3,17 +3,24 @@
  * CSVPARSERV2.JS - Parser pour le format ticket-level (V2)
  * ==========================================================================
  *
- * Parse le fichier CSV unifié exporté d'EazyBI avec les données au niveau ticket.
+ * Parse les fichiers CSV exportés d'EazyBI :
+ * - Sprint Review CSV : données ticket (type, statut, story points, etc.)
+ * - Time in Status CSV : temps passé dans chaque statut (CYCLE TIME RÉEL)
  *
- * FORMATS SUPPORTÉS :
- * - Issue Sprint (singulier) : "Sprint 16" ou "Sprint 16 IAML – 05/01"
- * - Issue Sprints (pluriel) : "Sprint 15,Sprint 16" ou "Sprint 12 IAML – 10/11,Sprint 13 IAML – 24/11"
- * - Les deux colonnes peuvent être présentes, le parser fusionne intelligemment
- * - La valeur "(no sprint)" est ignorée
+ * CYCLE TIME :
+ * - Le "Progress workdays" du Sprint Review = Lead Time (création → fermeture)
+ * - Le VRAI Cycle Time = somme des temps du Time in Status (En cours → Terminé)
+ * - L'enrichissement se fait dans dataTransformerV2.js
  *
- * Le parser détecte automatiquement les colonnes et priorise :
- * 1. Issue Sprints (pluriel) - contient l'historique complet
- * 2. Issue Sprint (singulier) - fallback si pluriel vide/absent
+ * FORMATS SPRINT SUPPORTÉS :
+ * - Standard : "Sprint 16" ou "Sprint 16 IAML – 05/01"
+ * - Tableau : "Tableau Sprint 14"
+ * - Engager : "Engager 13" ou "Engager Q1-2026 2/7 - 17"
+ * - Liste : "Sprint 15,Sprint 16" (le dernier = sprint de fermeture)
+ *
+ * TIME IN STATUS :
+ * - Les pourcentages sont calculés en divisant par le TOTAL des tickets
+ * - Cela évite de gonfler artificiellement les statuts peu utilisés
  *
  * ==========================================================================
  */
@@ -25,14 +32,31 @@ import { getSprintDates } from '../utils/sprintDates.js';
 // =========================================================================
 
 /**
- * Extrait le numéro de sprint depuis une chaîne comme "Sprint 16" ou "Sprint 16 IAML – 05/01"
+ * Extrait le numéro de sprint depuis une chaîne
+ * Supporte les formats :
+ * - "Sprint 16" ou "Sprint 16 IAML – 05/01"
+ * - "Tableau Sprint 14"
+ * - "Engager 13" ou "Engager 14"
+ * - "Engager Q1-2026 2/7 - 17" (numéro à la fin après " - ")
  * @param {string} sprintStr
  * @returns {number|null}
  */
 function parseSprintNumber(sprintStr) {
   if (!sprintStr || sprintStr.toLowerCase().includes('no sprint')) return null;
-  const match = sprintStr.match(/Sprint\s*(\d+)/i);
-  return match ? parseInt(match[1], 10) : null;
+
+  // Pattern 1: "Sprint X" ou "Tableau Sprint X"
+  let match = sprintStr.match(/Sprint\s*(\d+)/i);
+  if (match) return parseInt(match[1], 10);
+
+  // Pattern 2: "Engager X" (format simple)
+  match = sprintStr.match(/^Engager\s+(\d+)$/i);
+  if (match) return parseInt(match[1], 10);
+
+  // Pattern 3: "Engager Q1-2026 2/7 - 17" (numéro à la fin après " - ")
+  match = sprintStr.match(/\s-\s(\d+)$/);
+  if (match) return parseInt(match[1], 10);
+
+  return null;
 }
 
 /**
@@ -40,13 +64,26 @@ function parseSprintNumber(sprintStr) {
  * Supporte les formats :
  * - "Sprint 15,Sprint 16"
  * - "Sprint 12 IAML – 10/11,Sprint 13 IAML – 24/11"
+ * - "Engager 13,Engager 14"
+ * - "Engager Q1-2026 1/7 - 16,Engager Q1-2026 2/7 - 17"
  * @param {string} sprintsStr
  * @returns {number[]}
  */
 function parseSprintNumbers(sprintsStr) {
   if (!sprintsStr || sprintsStr.toLowerCase().includes('no sprint')) return [];
-  const matches = sprintsStr.matchAll(/Sprint\s*(\d+)/gi);
-  return [...matches].map(m => parseInt(m[1], 10));
+
+  // Séparer par virgule et parser chaque partie
+  const parts = sprintsStr.split(',');
+  const sprints = [];
+
+  for (const part of parts) {
+    const num = parseSprintNumber(part.trim());
+    if (num !== null && !sprints.includes(num)) {
+      sprints.push(num);
+    }
+  }
+
+  return sprints.sort((a, b) => a - b);
 }
 
 /**
@@ -489,7 +526,9 @@ export function aggregateBySprint(tickets) {
     if (ticket.closedDate < entry.minDate) entry.minDate = ticket.closedDate;
     if (ticket.closedDate > entry.maxDate) entry.maxDate = ticket.closedDate;
 
-    // Cycle time : exclure les bugs (ils ont leur propre métrique)
+    // Cycle time : EXCLURE les Bugs du calcul de la moyenne
+    // Les bugs ont leur propre métrique de temps de résolution
+    // Le cycleTime est enrichi depuis Time in Status (somme des temps de statut)
     if (ticket.cycleTime > 0 && ticket.type !== 'Bug') {
       entry.cycleTimes.push(ticket.cycleTime);
     }
@@ -833,32 +872,30 @@ export function aggregateTimeInStatus(timeInStatusData, selectedTeams = [], targ
     return { labels: statuses || [], values: [], pct: [] };
   }
 
-  // Calculer les moyennes par statut
+  // Calculer les sommes par statut
   const statusSums = {};
-  const statusCounts = {};
 
   for (const status of statuses) {
     statusSums[status] = 0;
-    statusCounts[status] = 0;
   }
 
   for (const ticket of filteredTickets) {
     for (const status of statuses) {
       const time = ticket.statusTimes[status] || 0;
-      if (time > 0) {
-        statusSums[status] += time;
-        statusCounts[status]++;
-      }
+      statusSums[status] += time;
     }
   }
 
   // Calculer moyennes et pourcentages
+  // IMPORTANT: Diviser par le nombre TOTAL de tickets (pas seulement ceux avec du temps dans ce statut)
+  // Cela donne des pourcentages représentatifs du temps réel passé dans chaque statut
   const values = [];
   let totalAvg = 0;
+  const ticketCount = filteredTickets.length;
 
   for (const status of statuses) {
-    const avg = statusCounts[status] > 0
-      ? statusSums[status] / statusCounts[status]
+    const avg = ticketCount > 0
+      ? statusSums[status] / ticketCount
       : 0;
     values.push(Math.round(avg * 100) / 100);
     totalAvg += avg;

@@ -6,11 +6,18 @@
  * Transforme les données ticket-level en format compatible avec les graphiques.
  * Utilise les données individuelles pour calculer médiane et percentiles réels.
  *
+ * CYCLE TIME (IMPORTANT) :
+ * - Le Cycle Time est enrichi depuis le Time in Status CSV (somme des temps
+ *   dans tous les statuts de travail : En cours, Code Review, etc.)
+ * - Si le Time in Status n'est pas disponible, fallback sur Progress workdays
+ *   (qui est en fait le Lead Time, moins précis)
+ * - Les Bugs sont EXCLUS du calcul du Cycle Time moyen (métrique séparée)
+ *
  * LOGIQUE SPRINT :
- * - Sprint = 2 semaines consécutives
- * - Les sprints commencent sur les semaines PAIRES (W2, W4, W6...)
- * - Sprint Review = le lundi suivant la fin du sprint
- * - On affiche les 6 derniers sprints COMPLETS
+ * - Sprint = 2 semaines consécutives (14 jours)
+ * - Référence : Sprint 18 = 2 février 2026
+ * - Sprint de fermeture = dernier sprint de la liste "Issue Sprints"
+ * - On affiche les 6 derniers sprints avec des tickets fermés
  *
  * ==========================================================================
  */
@@ -160,7 +167,17 @@ export function transformAllDataV2(rawData, selectedSprint = null, selectedTeams
     console.log(`[V2 Transformer] Filtrage par équipe: ${filteredTickets.length}/${rawData.tickets.length} tickets (équipes: ${selectedTeams.join(', ')})`);
   }
 
-  // Enrichir les tickets avec le Cycle Time réel depuis Time in Status
+  // ==========================================================================
+  // ENRICHISSEMENT CYCLE TIME (CRITIQUE)
+  // ==========================================================================
+  // Le Cycle Time réel = somme des temps dans les statuts de travail
+  // Source : Time in Status CSV (En cours + Code Review + A tester + etc.)
+  //
+  // ATTENTION : Si le Time in Status n'est pas chargé, le Cycle Time utilisera
+  // "Progress workdays" qui est en fait le Lead Time (création → fermeture),
+  // ce qui donne des valeurs incorrectes (souvent bien plus élevées).
+  // ==========================================================================
+
   if (rawData.timeInStatus?.tickets) {
     const tisMap = new Map(rawData.timeInStatus.tickets.map(t => [t.key, t]));
     let enrichedCount = 0;
@@ -168,16 +185,23 @@ export function transformAllDataV2(rawData, selectedSprint = null, selectedTeams
     filteredTickets.forEach(ticket => {
       const tisTicket = tisMap.get(ticket.key);
       if (tisTicket && tisTicket.totalTime > 0) {
-        // Remplacer cycleTime par le temps réel (totalTime)
+        // Remplacer cycleTime par le temps réel (somme des temps de statut)
+        // C'est le VRAI Cycle Time : temps de travail effectif
         ticket.cycleTime = tisTicket.totalTime;
         // Stocker les détails par statut pour référence
         ticket.statusTimes = tisTicket.statusTimes;
         enrichedCount++;
       }
-      // Si pas de correspondance, garder le cycleTime original (Progress workdays)
+      // Si pas de correspondance, garder le cycleTime original (Progress workdays = Lead Time)
     });
 
     console.log(`[V2 Transformer] Cycle Time enrichi depuis Time in Status: ${enrichedCount}/${filteredTickets.length} tickets`);
+
+    if (enrichedCount < filteredTickets.length * 0.5) {
+      console.warn(`[V2 Transformer] ATTENTION: Moins de 50% des tickets enrichis avec Time in Status. Les Cycle Time peuvent être inexacts.`);
+    }
+  } else {
+    console.warn(`[V2 Transformer] ATTENTION: Time in Status non chargé. Le Cycle Time utilisera "Progress workdays" (Lead Time) au lieu du vrai Cycle Time.`);
   }
 
   // Agréger les tickets par sprint (ne retourne que les sprints avec des tickets fermés)
