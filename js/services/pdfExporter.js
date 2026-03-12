@@ -467,7 +467,7 @@ class Exporter {
           value: `${formatNumber(cfr, 1)}%`,
           unit: '',
           statusColor: cfr < 15 ? 'success' : cfr < 30 ? 'warning' : 'danger',
-          subValue: `${sprintMetrics.bugs.sprintCreated}/${sprintMetrics.bugs.itemsDelivered} items`
+          subValue: `${sprintMetrics.bugs.sprintClosed}/${sprintMetrics.bugs.itemsDelivered} items`
         });
       }
 

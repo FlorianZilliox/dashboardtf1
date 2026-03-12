@@ -1031,7 +1031,7 @@ export default class ReviewPage extends Component {
         label: 'Change Failure Rate',
         value: sprintMetrics.bugs.changeFailureRate || 0,
         periodAvg: sprintMetrics.bugs.changeFailureRatePeriod || 0,
-        bugsCreated: sprintMetrics.bugs.sprintCreated || 0,
+        bugsClosed: sprintMetrics.bugs.sprintClosed || 0,
         itemsDelivered: sprintMetrics.bugs.itemsDelivered || 0,
         showCFR: true,
         decimals: 1
@@ -1189,7 +1189,7 @@ export default class ReviewPage extends Component {
               <span class="kpi-card__unit">%</span>
             </div>
             <div class="kpi-card__detail-small">
-              ${card.bugsCreated} bugs / ${card.itemsDelivered} items livrés
+              ${card.bugsClosed} bugs / ${card.itemsDelivered} items livrés
             </div>
             <div class="kpi-card__comparison">
               <span class="kpi-card__comparison-label">Moy. 6 sprints</span>

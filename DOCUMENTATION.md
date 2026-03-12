@@ -34,14 +34,17 @@
 
 ### 1.3 Formats de sprint supportés
 
-Le parser extrait le numéro de sprint avec le pattern `Sprint\s*(\d+)` :
+Le parser extrait le numéro de sprint avec plusieurs patterns :
 
 | Format | Exemple | Numéro extrait |
 |--------|---------|----------------|
-| Simple | `Sprint 16` | 16 |
+| Standard | `Sprint 16` | 16 |
 | Avec équipe | `Sprint 16 IAML – 05/01` | 16 |
-| Avec date | `Sprint 12 Team – 10/11` | 12 |
+| Tableau | `Tableau Sprint 14` | 14 |
+| Engager simple | `Engager 13` | 13 |
+| Engager Q1 | `Engager Q1-2026 2/7 - 17` | 17 |
 | Liste | `Sprint 15,Sprint 16` | [15, 16] |
+| Liste Engager | `Engager 14,Engager 15` | [14, 15] |
 
 ### 1.4 Valeurs spéciales ignorées
 
@@ -56,6 +59,27 @@ Quand les deux colonnes sont présentes :
 1. Issue Sprints (pluriel) → Prioritaire (historique complet)
 2. Issue Sprint (singulier) → Fallback si pluriel vide ou "(no sprint)"
 ```
+
+### 1.6 Structure multi-équipes
+
+Le CSV peut contenir des données de plusieurs équipes. Structure attendue :
+
+```
+,Issue key,Issue type,...
+All Issues,,,... (ligne de résumé global - ignorée)
+DATECH - Automatiser,,,... (ligne équipe - définit currentTeam)
+AUT-123,Story,...  (ticket assigné à "Automatiser")
+AUT-124,Bug,...    (ticket assigné à "Automatiser")
+DATECH - IAML,,,... (nouvelle équipe)
+DI-456,Story,...   (ticket assigné à "IAML")
+```
+
+**Détection d'équipe :**
+- Pattern `DATECH - NomEquipe` → extrait "NomEquipe"
+- Pattern générique `Projet - NomEquipe` → extrait "NomEquipe"
+- Sinon utilise la valeur brute (si pas un Issue key)
+
+**Attribution :** Chaque ticket hérite de l'équipe de la dernière ligne d'équipe rencontrée.
 
 ---
 
@@ -91,9 +115,47 @@ Exemple :
 
 ### 2.4 Ajouts mid-sprint
 
-Un ticket est considéré comme **ajout mid-sprint** s'il n'apparaît que dans un seul sprint (`isSingleSprint = true`) et a été créé après le début du sprint.
+Un ticket est considéré comme **ajout mid-sprint** s'il remplit ces deux conditions :
+1. Il n'apparaît que dans un seul sprint (`isSingleSprint = true`)
+2. Sa date de création est **strictement après** le lundi de début du sprint
 
-### 2.5 Sprint disponible en Review
+```javascript
+const isSingleSprint = ticket.sprints && ticket.sprints.length === 1;
+const isCreatedAfterStart = createdDate && createdDate > sprintStart;
+const isMidSprintAddition = isSingleSprint && isCreatedAfterStart;
+```
+
+### 2.5 Convention des dates de sprint
+
+**Référence fixe** : Sprint 18 commence le **2 février 2026** (lundi de la semaine 6).
+
+**Formule** :
+```
+Sprint N début = 2 février 2026 - (18 - N) × 14 jours
+```
+
+**Durée** : 14 jours (lundi semaine paire → dimanche semaine impaire)
+
+**Exemples** :
+| Sprint | Date début | Date fin |
+|--------|------------|----------|
+| Sprint 17 | 19 janvier 2026 | 1 février 2026 |
+| Sprint 18 | 2 février 2026 | 15 février 2026 |
+| Sprint 19 | 16 février 2026 | 1 mars 2026 |
+
+**Implémentation** (`utils/sprintDates.js`) :
+```javascript
+const SPRINT_REF = { number: 18, start: new Date(2026, 1, 2) }; // mois 0-indexed
+
+export function getSprintDates(sprintNumber) {
+  const diffSprints = SPRINT_REF.number - sprintNumber;
+  const startDate = new Date(SPRINT_REF.start);
+  startDate.setDate(startDate.getDate() - (diffSprints * 14));
+  // ...
+}
+```
+
+### 2.6 Sprint disponible en Review
 
 Un sprint apparaît dans le sélecteur **uniquement s'il a au moins un ticket fermé**.
 
@@ -101,11 +163,44 @@ Un sprint apparaît dans le sélecteur **uniquement s'il a au moins un ticket fe
 > le Sprint 17 devient disponible dans le sélecteur, même si le sprint n'est pas terminé.
 > Cela permet de consulter les données partielles en cours de sprint.
 
-### 2.6 Sprint Forecast
+### 2.7 Sprint Forecast
 
 Le sprint Forecast = **Sprint Review sélectionné + 1**
 
 Exemple : Si Review = Sprint 16, alors Forecast = Sprint 17
+
+### 2.8 Filtrage par équipe
+
+**RÈGLE CRITIQUE** : Quand une ou plusieurs équipes sont sélectionnées, **TOUTES les métriques** doivent être calculées uniquement sur les tickets de ces équipes.
+
+| Métrique | Filtrage appliqué |
+|----------|-------------------|
+| Throughput | Tickets filtrés par équipe |
+| Cycle Time | Tickets filtrés par équipe |
+| Story Points | Tickets filtrés par équipe |
+| Bugs | Tickets filtrés par équipe |
+| Burndown | Tickets filtrés par équipe |
+| WIP | Tickets filtrés par équipe |
+| Corrélation | Tickets filtrés par équipe |
+| Time in Status | Tickets filtrés par équipe ET sprint |
+
+**Implémentation** (`dataTransformerV2.js`) :
+
+```javascript
+// OBLIGATOIRE : Filtrer par équipe AVANT tout calcul
+let filteredTickets = rawData.tickets;
+if (selectedTeams && selectedTeams.length > 0) {
+  filteredTickets = rawData.tickets.filter(t => selectedTeams.includes(t.team));
+}
+
+// Utiliser filteredTickets pour TOUTES les métriques
+const sprintData = aggregateBySprint(filteredTickets);
+result.bugs = transformBugsV2(displayedSprints, filteredTickets);
+result.storyPoints = transformStoryPointsV2(displayedSprints, filteredTickets);
+// etc.
+```
+
+**Validation** : Si IAML est sélectionnée seule et que le CSV contient 1128 tickets au total dont 151 pour IAML, alors toutes les métriques doivent être calculées sur ces 151 tickets uniquement.
 
 ---
 
@@ -122,12 +217,29 @@ Throughput = Nombre de tickets fermés dans le sprint
 
 ### 3.2 Cycle Time
 
+**IMPORTANT** : Le Cycle Time est calculé depuis le **Time in Status CSV**, pas depuis le Sprint Review CSV.
+
 ```
-Cycle Time moyen = Moyenne des "Progress workdays" des tickets fermés
+Cycle Time = Somme des temps dans tous les statuts de travail
+           = En cours + Code Review + A tester + A déployer + A valider
 ```
 
-- Exclut les Bugs (calculés séparément)
-- Si `Progress workdays = 0` pour un ticket terminé → valeur par défaut = 1 jour
+**Source de données :**
+- `Time in Status CSV` → **Cycle Time réel** (temps de travail effectif)
+- `Progress workdays` (Sprint Review) → Lead Time (création → fermeture) - NON UTILISÉ
+
+**Règles :**
+- Exclut les **Bugs** (calculés séparément dans la métrique Bugs)
+- Si le Time in Status n'est pas chargé, fallback sur Progress workdays (moins précis)
+- Calcul de la moyenne ET de la médiane pour chaque sprint
+
+**Implémentation** (`dataTransformerV2.js`) :
+```javascript
+// Enrichissement depuis Time in Status
+if (tisTicket && tisTicket.totalTime > 0) {
+  ticket.cycleTime = tisTicket.totalTime; // Somme des temps de statut
+}
+```
 
 ### 3.3 Story Points
 
@@ -181,6 +293,31 @@ Quand un contributeur est marqué absent :
 1. Il est exclu de la simulation Monte Carlo
 2. Les scénarios P15/P50/P85 sont recalculés sans sa contribution
 3. Le tableau affiche ses lignes barrées
+
+### 3.7 Time in Status
+
+#### Calcul des moyennes
+
+```
+Moyenne par statut = Somme des temps / Nombre TOTAL de tickets filtrés
+```
+
+**IMPORTANT** : On divise par le nombre total de tickets, pas par le nombre de tickets ayant du temps dans ce statut. Cela évite de gonfler artificiellement les pourcentages pour les statuts peu utilisés.
+
+#### Exemple
+
+Pour 7 tickets avec ces temps en Code Review : [0, 0, 0, 0, 0, 0, 1.71j]
+
+| Méthode | Calcul | Moyenne | % si total=10j |
+|---------|--------|---------|----------------|
+| ❌ Ancienne | 1.71 / 1 | 1.71j | **53%** (trompeur) |
+| ✅ Nouvelle | 1.71 / 7 | 0.24j | **17%** (réaliste) |
+
+#### Filtrage
+
+Le Time in Status est filtré par :
+- **Équipe** : tickets de l'équipe sélectionnée
+- **Sprint** : tickets dont le `lastSprint` est dans la plage (6 derniers sprints ou sprint unique)
 
 ---
 
@@ -246,5 +383,8 @@ ReviewPage.js / ForecastPage.js
 
 | Date | Version | Changements |
 |------|---------|-------------|
+| 2026-02-18 | 2.3 | **Clarification Cycle Time** : Documentation mise à jour pour clarifier que le Cycle Time vient du Time in Status (somme des temps de statut), pas du Progress workdays (Lead Time). Support formats Engager. |
+| 2026-02-17 | 2.2 | **Fix Time in Status** : Pourcentages calculés sur le total des tickets (évite les % gonflés artificiellement) |
+| 2026-02-12 | 2.1 | **Fix critique** : Filtrage par équipe appliqué à TOUTES les métriques (était ignoré sauf Time in Status) |
 | 2026-01-20 | 2.0 | Support multi-colonnes sprint, Story Points auto, Monte Carlo individuel |
 

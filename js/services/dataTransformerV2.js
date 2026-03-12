@@ -448,23 +448,24 @@ function transformBugsV2(sprintData, allTickets) {
   const mttrMedian = lastSprint.medianResolutionTime || 0;
   const mttrPeriod = periodBugStats.avg || 0;
 
-  // Change Failure Rate = bugs créés / items livrés (sur le sprint)
-  // On prend les items livrés du dernier sprint (propriété "closed")
+  // Change Failure Rate = bugs fermés / items livrés (sur le sprint)
+  // On utilise les bugs FERMÉS (terminés) dans le sprint, pas les bugs créés par date
+  // car la méthode par date de création est fragile (plages de dates qui se chevauchent)
   const lastSprintData = sprintData[sprintData.length - 1];
   const itemsDelivered = lastSprintData ? lastSprintData.closed : 0;
   const changeFailureRate = itemsDelivered > 0
-    ? (lastSprint.created / itemsDelivered) * 100
+    ? (lastSprint.closed / itemsDelivered) * 100
     : 0;
 
   // Change Failure Rate sur la période (moyenne)
   const totalItemsDelivered = sprintData.reduce((sum, s) => sum + s.closed, 0);
-  const totalBugsCreated = sprints.reduce((sum, s) => sum + s.created, 0);
+  const totalBugsClosed = sprints.reduce((sum, s) => sum + s.closed, 0);
   const changeFailureRatePeriod = totalItemsDelivered > 0
-    ? (totalBugsCreated / totalItemsDelivered) * 100
+    ? (totalBugsClosed / totalItemsDelivered) * 100
     : 0;
 
   console.log('[V2 DORA] MTTR sprint:', mttr, 'jours | MTTR période:', mttrPeriod, 'jours');
-  console.log('[V2 DORA] Change Failure Rate sprint:', changeFailureRate.toFixed(1), '% | période:', changeFailureRatePeriod.toFixed(1), '%');
+  console.log('[V2 DORA] Change Failure Rate sprint:', changeFailureRate.toFixed(1), '% (', lastSprint.closed, 'bugs fermés /', itemsDelivered, 'items) | période:', changeFailureRatePeriod.toFixed(1), '%');
 
   return {
     weeks: sprints.map(s => s.label),

@@ -28,6 +28,11 @@
 import { getSprintDates } from '../utils/sprintDates.js';
 
 // =========================================================================
+// STATUTS EXCLUS DU PARSING (tickets pas réellement dans le sprint)
+// =========================================================================
+const EXCLUDED_STATUSES = /^(backlog|a affiner|a cadrer)$/i;
+
+// =========================================================================
 // PARSING DU FICHIER UNIFIÉ
 // =========================================================================
 
@@ -246,6 +251,12 @@ export function parseUnifiedCSV(csvContent) {
     const closureSprint = allSprints.length > 0 ? allSprints[allSprints.length - 1] : null;
 
     const status = cols.status !== -1 ? (row[cols.status] || '') : '';
+
+    // Exclure les tickets dont le statut indique qu'ils ne sont pas réellement dans le sprint
+    if (EXCLUDED_STATUSES.test(status.trim())) {
+      continue;
+    }
+
     const closedDate = cols.closedDate !== -1 ? parseDate(row[cols.closedDate]) : null;
 
     // Déterminer si le ticket est terminé (status contient "Terminé", "Done", "Fini", etc.)
