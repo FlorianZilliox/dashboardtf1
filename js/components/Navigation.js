@@ -1,18 +1,14 @@
 /**
  * ==========================================================================
- * NAVIGATION.JS - Composant de navigation
+ * NAVIGATION.JS - Composant de navigation (Masthead horizontal)
  * ==========================================================================
  *
- * Gère la navigation entre les sections :
- * - Admin (préparation)
- * - Review (présentation)
+ * Gere la navigation entre les sections via des tabs horizontaux :
+ * - Admin (preparation)
+ * - Review (presentation)
  * - Forecast (projection)
- *
- * USAGE :
- *   const nav = new Navigation('#nav-container', {
- *     sections: ['admin', 'review', 'forecast'],
- *     activeSection: 'admin'
- *   });
+ * - Pages secretes (StarAc, HowMany)
+ * - Bouton RGPD
  *
  * ==========================================================================
  */
@@ -28,24 +24,29 @@ import eventBus from '../core/eventBus.js';
 const SECTIONS_CONFIG = {
   admin: {
     id: 'admin',
-    label: 'Préparation'
+    label: 'Préparation',
+    num: '§ 01'
   },
   review: {
     id: 'review',
-    label: 'Review'
+    label: 'Review',
+    num: '§ 02'
   },
   forecast: {
     id: 'forecast',
-    label: 'Forecast'
+    label: 'Forecast',
+    num: '§ 03'
   },
   shared: {
     id: 'shared',
     label: 'StarAc',
+    num: '§ ★',
     secret: 'starac'
   },
   howmany: {
     id: 'howmany',
     label: 'How Many',
+    num: '§ #',
     secret: 'howmany'
   }
 };
@@ -58,17 +59,13 @@ export default class Navigation extends Component {
   /**
    * @param {string|HTMLElement} container
    * @param {Object} props
-   * @param {Array} props.sections - Sections à afficher
+   * @param {Array} props.sections - Sections a afficher
    * @param {string} props.activeSection - Section active
-   * @param {boolean} props.showIcons - Afficher les icônes
-   * @param {boolean} props.showDescriptions - Afficher les descriptions (mobile: non)
    */
   constructor(container, props = {}) {
     super(container, {
       sections: ['admin', 'review', 'forecast'],
       activeSection: 'admin',
-      showIcons: true,
-      showDescriptions: false,
       ...props
     });
   }
@@ -79,10 +76,10 @@ export default class Navigation extends Component {
   init() {
     this.state = {
       activeSection: this.props.activeSection,
-      unlockedSecrets: new Set() // Tracks which secrets are unlocked
+      unlockedSecrets: new Set()
     };
 
-    // Écouter les changements de route
+    // Ecouter les changements de route
     this.on('route:changed', ({ route }) => {
       const section = route.replace('/', '') || 'admin';
       if (section !== this.state.activeSection) {
@@ -90,7 +87,7 @@ export default class Navigation extends Component {
       }
     });
 
-    // Écouter les événements de déverrouillage (un par page secrète)
+    // Ecouter les evenements de deverrouillage
     eventBus.on('secret:unlock:starac', () => {
       this.unlockSecret('starac');
     });
@@ -99,15 +96,15 @@ export default class Navigation extends Component {
       this.unlockSecret('howmany');
     });
 
-    // Écouter l'événement pour cacher tous les secrets
+    // Ecouter l'evenement pour cacher tous les secrets
     eventBus.on('secret:hide-all', () => {
       this.hideAllSecrets();
     });
   }
 
   /**
-   * Déverrouille une section secrète
-   * @param {string} secretId - Identifiant du secret ('starac', 'howmany')
+   * Deverrouille une section secrete
+   * @param {string} secretId
    */
   unlockSecret(secretId) {
     if (!this.state.unlockedSecrets.has(secretId)) {
@@ -118,7 +115,7 @@ export default class Navigation extends Component {
   }
 
   /**
-   * Vérifie si un secret est déverrouillé
+   * Verifie si un secret est deverrouille
    * @param {string} secretId
    * @returns {boolean}
    */
@@ -130,13 +127,10 @@ export default class Navigation extends Component {
    * Cache tous les onglets secrets
    */
   hideAllSecrets() {
-    // Si on est sur une page secrète, naviguer vers admin
     const secretSections = ['shared', 'howmany'];
     if (secretSections.includes(this.state.activeSection)) {
       this.navigateTo('admin');
     }
-
-    // Vider les secrets déverrouillés
     this.setState({ unlockedSecrets: new Set() });
   }
 
@@ -147,7 +141,6 @@ export default class Navigation extends Component {
   navigateTo(sectionId) {
     if (sectionId === this.state.activeSection) return;
 
-    // Vérifier si la section existe
     if (!SECTIONS_CONFIG[sectionId]) {
       console.warn(`[Navigation] Section inconnue: ${sectionId}`);
       return;
@@ -163,7 +156,7 @@ export default class Navigation extends Component {
   }
 
   /**
-   * Récupère la section active
+   * Recupere la section active
    * @returns {string}
    */
   getActiveSection() {
@@ -171,7 +164,7 @@ export default class Navigation extends Component {
   }
 
   /**
-   * Rendu du composant
+   * Rendu du composant — tabs horizontaux style masthead
    */
   render() {
     const { sections } = this.props;
@@ -180,7 +173,6 @@ export default class Navigation extends Component {
     // Construire la liste des sections visibles
     const visibleSections = [...sections];
 
-    // Ajouter les sections secrètes déverrouillées
     if (unlockedSecrets.has('starac')) {
       visibleSections.push('shared');
     }
@@ -188,40 +180,45 @@ export default class Navigation extends Component {
       visibleSections.push('howmany');
     }
 
+    const tabs = visibleSections.map(sectionId => {
+      const section = SECTIONS_CONFIG[sectionId];
+      if (!section) return '';
+
+      const isActive = activeSection === sectionId;
+      const secretClass = section.secret === 'starac' ? 'tab--secret' : '';
+
+      return `
+        <button class="tab ${secretClass}"
+                data-section="${sectionId}"
+                data-action="navigate"
+                role="tab"
+                aria-selected="${isActive}">
+          <span class="tab__num">${section.num}</span>
+          ${section.label}
+        </button>
+      `;
+    }).join('');
+
     return `
       <div class="navigation" role="navigation" aria-label="Navigation principale">
-        <div class="navigation__tabs">
-          ${visibleSections.map(sectionId => {
-            const section = SECTIONS_CONFIG[sectionId];
-            if (!section) return '';
-
-            const isActive = activeSection === sectionId;
-            const secretType = section.secret; // 'starac', 'howmany', ou undefined
-
-            // StarAc garde son style spécial, How Many reste normal
-            const secretClass = secretType === 'starac' ? 'navigation__tab--secret' : '';
-
-            return `
-              <button class="navigation__tab ${isActive ? 'navigation__tab--active' : ''} ${secretClass}"
-                      data-section="${sectionId}"
-                      data-action="navigate"
-                      role="tab"
-                      aria-selected="${isActive}">
-                ${section.label}
-              </button>
-            `;
-          }).join('')}
-        </div>
+        ${tabs}
+        <button class="tab tab--right"
+                data-action="show-rgpd"
+                title="RGPD">
+          <span class="tab__num">¶</span>
+          RGPD
+        </button>
       </div>
     `;
   }
 
   /**
-   * Définition des événements
+   * Definition des evenements
    */
   events() {
     return {
-      'click [data-action="navigate"]': this._handleNavigate
+      'click [data-action="navigate"]': this._handleNavigate,
+      'click [data-action="show-rgpd"]': this._handleShowRgpd
     };
   }
 
@@ -238,7 +235,19 @@ export default class Navigation extends Component {
   }
 
   /**
-   * Définit la section active sans navigation
+   * Gestionnaire RGPD
+   * @private
+   */
+  _handleShowRgpd() {
+    const modal = document.getElementById('rgpd-modal');
+    if (modal) {
+      modal.classList.add('modal-overlay--visible');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  /**
+   * Definit la section active sans navigation
    * @param {string} sectionId
    */
   setActiveSection(sectionId) {
@@ -248,12 +257,11 @@ export default class Navigation extends Component {
   }
 
   /**
-   * Vérifie si toutes les conditions sont remplies pour accéder à une section
+   * Verifie si toutes les conditions sont remplies pour acceder a une section
    * @param {string} sectionId
    * @returns {boolean}
    */
   canAccessSection(sectionId) {
-    // Pour review et forecast, les données doivent être chargées
     if (sectionId === 'review' || sectionId === 'forecast') {
       const state = this.getStoreState();
       return state.csvLoaded || state.manualInput;

@@ -190,7 +190,7 @@ class Exporter {
 
     try {
       const state = store.getState();
-      const { sprintMetrics, manualInput, sprintGoals } = state;
+      const { sprintMetrics, manualInput } = state;
 
       if (!sprintMetrics) {
         throw new Error('Pas de données à exporter');
@@ -334,58 +334,6 @@ class Exporter {
         doc.text(`${completionPct}%`, leftColX + spColWidth * 2.5, spCenterY + 3, { align: 'center' });
 
         leftY += velocityCardHeight + 8;
-      }
-
-      // --- Section Objectifs ---
-      if (sprintGoals && sprintGoals.length > 0) {
-        doc.setTextColor(...colors.primary);
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Objectifs', leftColX, leftY);
-        leftY += 6;
-
-        sprintGoals.forEach((goal) => {
-          const statusColor = goal.achieved === true ? colors.success :
-                              goal.achieved === 'partial' ? colors.warning : colors.secondary;
-
-          // Dessiner l'icône de statut (cercle avec ou sans coche)
-          const iconX = leftColX + 2;
-          const iconY = leftY + 2;
-          const iconRadius = 2.5;
-
-          if (goal.achieved === true) {
-            // Cercle plein vert avec coche
-            doc.setFillColor(...statusColor);
-            doc.circle(iconX, iconY, iconRadius, 'F');
-            // Coche blanche
-            doc.setDrawColor(...colors.white);
-            doc.setLineWidth(0.6);
-            doc.line(iconX - 1.2, iconY, iconX - 0.2, iconY + 1);
-            doc.line(iconX - 0.2, iconY + 1, iconX + 1.5, iconY - 1);
-          } else if (goal.achieved === 'partial') {
-            // Cercle demi-plein orange
-            doc.setFillColor(...statusColor);
-            doc.circle(iconX, iconY, iconRadius, 'F');
-            doc.setFillColor(...colors.white);
-            doc.rect(iconX, iconY - iconRadius, iconRadius, iconRadius * 2, 'F');
-          } else {
-            // Cercle vide gris
-            doc.setDrawColor(...statusColor);
-            doc.setLineWidth(0.5);
-            doc.circle(iconX, iconY, iconRadius, 'S');
-          }
-
-          doc.setTextColor(...colors.primary);
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          const goalText = goal.text || goal;
-          // Tronquer si trop long
-          const maxChars = 45;
-          const displayText = goalText.length > maxChars ? goalText.substring(0, maxChars) + '...' : goalText;
-          doc.text(displayText, leftColX + 8, leftY + 4);
-
-          leftY += 8;
-        });
       }
 
       // =====================================================================

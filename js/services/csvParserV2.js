@@ -33,6 +33,41 @@ import { getSprintDates } from '../utils/sprintDates.js';
 const EXCLUDED_STATUSES = /^(backlog|a affiner|a cadrer)$/i;
 
 // =========================================================================
+// CLÉS JIRA (une clé = un ticket unique)
+// =========================================================================
+const JIRA_KEY = '[A-Z][A-Z0-9_]*-\\d+';
+const JIRA_KEY_EXACT = new RegExp(`^${JIRA_KEY}$`);
+// Libellé eazyBI d'un ticket : "KEY titre", ou "PARENT / SOUS-TÂCHE titre" pour une sous-tâche
+// → la clé du ticket est la DERNIÈRE de la chaîne
+const JIRA_ISSUE_LABEL = new RegExp(`^(?:${JIRA_KEY}\\s*/\\s*)*(${JIRA_KEY})`);
+
+/**
+ * Garde une seule ligne par clé Jira (la première rencontrée)
+ * Une clé Jira est unique : deux lignes avec la même clé = un seul ticket
+ * @param {Object[]} tickets - Tickets avec une propriété key
+ * @param {string} source - Nom du fichier (pour les logs)
+ * @returns {{ tickets: Object[], duplicateKeys: string[] }}
+ */
+function dedupeByKey(tickets, source) {
+  const byKey = new Map();
+  const duplicateKeys = new Set();
+
+  tickets.forEach(ticket => {
+    if (byKey.has(ticket.key)) {
+      duplicateKeys.add(ticket.key);
+    } else {
+      byKey.set(ticket.key, ticket);
+    }
+  });
+
+  if (duplicateKeys.size > 0) {
+    console.warn(`[${source}] ${duplicateKeys.size} clé(s) Jira en double, une seule ligne gardée par clé :`, [...duplicateKeys]);
+  }
+
+  return { tickets: [...byKey.values()], duplicateKeys: [...duplicateKeys] };
+}
+
+// =========================================================================
 // PARSING DU FICHIER UNIFIÉ
 // =========================================================================
 
@@ -193,7 +228,7 @@ function extractTeamName(value) {
 
   // Sinon, utiliser la valeur telle quelle si c'est potentiellement un nom d'équipe
   // (pas de Issue key, pas un nombre seul)
-  if (!trimmed.match(/^[A-Z]+-\d+$/) && !trimmed.match(/^\d+$/)) {
+  if (!JIRA_KEY_EXACT.test(trimmed) && !trimmed.match(/^\d+$/)) {
     return trimmed;
   }
 
@@ -222,18 +257,18 @@ export function parseUnifiedCSV(csvContent) {
     return { tickets: [], summary: null, teams: [] };
   }
 
-  const tickets = [];
+  const rows = [];
   const teamsSet = new Set();
   let currentTeam = null;
 
   // Parser chaque ligne (skip header)
   for (let i = 1; i < lines.length; i++) {
     const row = parseCSVRow(lines[i]);
-    const issueKey = row[cols.key] || '';
+    const issueKey = (row[cols.key] || '').trim();
     const firstCol = row[0] || '';
 
     // Vérifier si c'est une ligne de résumé d'équipe
-    if (!issueKey.match(/^[A-Z]+-\d+$/)) {
+    if (!JIRA_KEY_EXACT.test(issueKey)) {
       const teamName = extractTeamName(firstCol);
       if (teamName) {
         currentTeam = teamName;
@@ -290,8 +325,10 @@ export function parseUnifiedCSV(csvContent) {
       team: currentTeam
     };
 
-    tickets.push(ticket);
+    rows.push(ticket);
   }
+
+  const { tickets, duplicateKeys } = dedupeByKey(rows, 'CSV Parser');
 
   // Liste des équipes triées alphabétiquement
   const teams = [...teamsSet].sort((a, b) => a.localeCompare(b, 'fr'));
@@ -311,7 +348,8 @@ export function parseUnifiedCSV(csvContent) {
       closed: tickets.filter(t => t.closedDate).length,
       open: tickets.filter(t => !t.closedDate).length,
       maxSprint: maxSprint,
-      teamCount: teams.length
+      teamCount: teams.length,
+      duplicateKeys
     }
   };
 }
@@ -605,6 +643,7 @@ export function aggregateBySprint(tickets) {
           key: ticket.key,
           summary: ticket.summary,
           type: ticket.type,
+          storyPoints: ticket.storyPoints || 0,
           createdDate: ticket.createdDate,
           isFinished: ticket.isFinished
         });
@@ -762,7 +801,7 @@ export function parseTimeInStatusCSV(csvContent) {
   console.log('[TimeInStatus Parser] Statuts détectés:', statusColumns.map(s => s.status));
 
   const statuses = statusColumns.map(s => s.status);
-  const tickets = [];
+  const rows = [];
   const teamsSet = new Set();
   let currentTeam = null;
   let globalSummary = null;
@@ -789,7 +828,8 @@ export function parseTimeInStatusCSV(csvContent) {
     const teamName = extractTeamName(firstCol);
 
     // Si pas de clé de type "XXX-123", c'est une ligne d'équipe
-    if (!firstCol.match(/^[A-Z]+-\d+/)) {
+    const labelMatch = firstCol.match(JIRA_ISSUE_LABEL);
+    if (!labelMatch) {
       if (teamName) {
         currentTeam = teamName;
         teamsSet.add(teamName);
@@ -798,8 +838,8 @@ export function parseTimeInStatusCSV(csvContent) {
       continue;
     }
 
-    // C'est un ticket individuel
-    const ticketKey = firstCol.match(/^([A-Z]+-\d+)/)?.[1] || firstCol;
+    // C'est un ticket individuel ("DI-368 / DI-536 titre" → sous-tâche DI-536)
+    const ticketKey = labelMatch[1];
 
     // Extraire le temps dans chaque statut
     const statusTimes = {};
@@ -824,7 +864,7 @@ export function parseTimeInStatusCSV(csvContent) {
     const sprints = parseAllSprintNumbers(sprintsStr);
     const lastSprint = sprints.length > 0 ? sprints[sprints.length - 1] : null;
 
-    tickets.push({
+    rows.push({
       key: ticketKey,
       team: currentTeam,
       statusTimes,
@@ -834,6 +874,7 @@ export function parseTimeInStatusCSV(csvContent) {
     });
   }
 
+  const { tickets, duplicateKeys } = dedupeByKey(rows, 'TimeInStatus Parser');
   const teams = [...teamsSet].sort((a, b) => a.localeCompare(b, 'fr'));
 
   console.log('[TimeInStatus Parser] Équipes:', teams);
@@ -843,7 +884,8 @@ export function parseTimeInStatusCSV(csvContent) {
     tickets,
     teams,
     statuses,
-    summary: globalSummary
+    summary: globalSummary,
+    duplicateKeys
   };
 }
 

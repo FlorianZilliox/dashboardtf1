@@ -1,454 +1,361 @@
 /**
  * ==========================================================================
- * SPRINT REVIEW DASHBOARD - DESIGN SYSTEM
+ * SPRINT REVIEW DASHBOARD - DESIGN SYSTEM (Editorial)
  * ==========================================================================
  *
- * Ce fichier contient tous les design tokens de l'application.
- * Il définit les variables CSS qui assurent la cohérence visuelle.
- *
- * PRINCIPES :
- * - Toutes les couleurs, espacements, et tailles sont définis ici
- * - Utiliser UNIQUEMENT ces variables dans les autres fichiers CSS
- * - Nommage sémantique : ce que ça fait, pas ce que ça ressemble
- *
- * STRUCTURE :
- * 1. Couleurs (backgrounds, textes, accents, états)
- * 2. Typographie (familles, tailles, poids)
- * 3. Espacements (système 8px)
- * 4. Bordures et arrondis
- * 5. Ombres
- * 6. Transitions
- * 7. Z-index
- * 8. Breakpoints (commentés, utilisés en media queries)
+ * Systeme de tokens editorial : Fraunces (serif), Inter (sans), JetBrains Mono.
+ * Palette chaude (sage, amber, rust, plum, sky).
+ * Theming via data-attributes : palette, theme, density, typo.
  *
  * ==========================================================================
  */
 
 :root {
   /* ========================================================================
-   * 1. COULEURS
+   * 1. TYPOGRAPHIE
    * ======================================================================== */
 
-  /* -------------------------------------------------------------------------
-   * 1.1 Backgrounds - Fonds de l'application
-   * ------------------------------------------------------------------------- */
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Inter", -apple-system, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  /** Fond principal de l'application (gris très clair) */
-  --color-bg-primary: #f8fafc;
+  /* Aliases pour compatibilite avec le code existant */
+  --font-family-primary: var(--font-body);
+  --font-family-headline: var(--font-display);
+  --font-family-mono: var(--font-mono);
 
-  /** Fond des cards et conteneurs (blanc pur) */
-  --color-bg-card: #ffffff;
-
-  /** Fond des sections secondaires, inputs (gris clair) */
-  --color-bg-secondary: #f1f5f9;
-
-  /** Fond au survol des éléments interactifs */
-  --color-bg-hover: #e2e8f0;
-
-  /** Fond des éléments sélectionnés/actifs */
-  --color-bg-active: #dbeafe;
-
-  /* -------------------------------------------------------------------------
-   * 1.2 Textes - Couleurs de typographie
-   * ------------------------------------------------------------------------- */
-
-  /** Texte principal (titres, corps important) - quasi noir */
-  --color-text-primary: #1e293b;
-
-  /** Texte secondaire (labels, descriptions) - gris foncé */
-  --color-text-secondary: #64748b;
-
-  /** Texte désactivé/placeholder - gris clair */
-  --color-text-muted: #94a3b8;
-
-  /** Texte sur fond coloré (blanc) */
-  --color-text-inverse: #ffffff;
-
-  /* -------------------------------------------------------------------------
-   * 1.3 Couleurs d'accent - Palette pastel pour les graphiques
-   *
-   * USAGE RECOMMANDÉ :
-   * - Blue   : Métriques principales, éléments de navigation actifs
-   * - Teal   : Données positives, succès secondaire
-   * - Coral  : Alertes douces, données négatives
-   * - Yellow : Avertissements, données intermédiaires
-   * - Purple : Données tertiaires, catégories additionnelles
-   * - Green  : Validation, succès
-   * - Orange : Données complémentaires
-   * ------------------------------------------------------------------------- */
-
-  /** Bleu pastel - Couleur principale d'accent */
-  --color-accent-blue: #6b9bd2;
-  --color-accent-blue-light: #a3c4e9;
-  --color-accent-blue-dark: #4a7bb5;
-
-  /** Turquoise/Teal - Données secondaires positives */
-  --color-accent-teal: #5bb5b0;
-  --color-accent-teal-light: #8fd4d0;
-  --color-accent-teal-dark: #3d9691;
-
-  /** Corail/Rose - Alertes douces, erreurs */
-  --color-accent-coral: #f28b82;
-  --color-accent-coral-light: #f7b4ae;
-  --color-accent-coral-dark: #e05a4f;
-
-  /** Jaune doux - Avertissements */
-  --color-accent-yellow: #f5c869;
-  --color-accent-yellow-light: #f9dc9a;
-  --color-accent-yellow-dark: #e5a832;
-
-  /** Violet pastel - Catégories tertiaires */
-  --color-accent-purple: #a78bda;
-  --color-accent-purple-light: #c4b0e8;
-  --color-accent-purple-dark: #8a6bc4;
-
-  /** Vert doux - Succès, validation */
-  --color-accent-green: #7bc47f;
-  --color-accent-green-light: #a5d8a8;
-  --color-accent-green-dark: #5aa95e;
-
-  /** Orange pastel - Données complémentaires */
-  --color-accent-orange: #f5a962;
-  --color-accent-orange-light: #f9c795;
-  --color-accent-orange-dark: #e8852e;
-
-  /* -------------------------------------------------------------------------
-   * 1.4 Couleurs d'état - Feedback utilisateur
-   * ------------------------------------------------------------------------- */
-
-  /** Succès - Actions réussies, objectifs atteints (>=90%) */
-  --color-status-success: #22c55e;
-  --color-status-success-bg: #dcfce7;
-  --color-status-success-border: #86efac;
-
-  /** Avertissement - Attention requise, partiel (70-89%) */
-  --color-status-warning: #f59e0b;
-  --color-status-warning-bg: #fef3c7;
-  --color-status-warning-border: #fcd34d;
-
-  /** Danger - Erreur, échec, critique (<70%) */
-  --color-status-danger: #ef4444;
-  --color-status-danger-bg: #fee2e2;
-  --color-status-danger-border: #fca5a5;
-
-  /** Info - Information neutre */
-  --color-status-info: #3b82f6;
-  --color-status-info-bg: #dbeafe;
-  --color-status-info-border: #93c5fd;
-
-  /* -------------------------------------------------------------------------
-   * 1.5 Bordures
-   * ------------------------------------------------------------------------- */
-
-  /** Bordure par défaut (inputs, cards) */
-  --color-border-default: #e2e8f0;
-
-  /** Bordure au focus */
-  --color-border-focus: var(--color-accent-blue);
-
-  /** Bordure légère (séparateurs) */
-  --color-border-light: #f1f5f9;
-
-  /* ========================================================================
-   * 2. TYPOGRAPHIE
-   * ======================================================================== */
-
-  /* -------------------------------------------------------------------------
-   * 2.1 Familles de polices
-   * ------------------------------------------------------------------------- */
-
-  /** Police principale - Interface */
-  --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-                         Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-
-  /** Police mono - Code, données */
-  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco,
-                      Consolas, monospace;
-
-  /* -------------------------------------------------------------------------
-   * 2.2 Tailles de police
-   *
-   * Échelle basée sur un ratio de 1.25 (Major Third)
-   * Base: 16px
-   * ------------------------------------------------------------------------- */
-
-  /** 12px - Légendes, badges, footnotes */
+  /* Tailles (echelle Major Third 1.25x, base 16px) */
   --font-size-xs: 0.75rem;
-
-  /** 14px - Labels, texte secondaire */
   --font-size-sm: 0.875rem;
-
-  /** 16px - Texte de base */
   --font-size-base: 1rem;
-
-  /** 18px - Titres de sections */
   --font-size-lg: 1.125rem;
-
-  /** 20px - Sous-titres importants */
   --font-size-xl: 1.25rem;
-
-  /** 24px - Valeurs secondaires, titres cards */
   --font-size-2xl: 1.5rem;
-
-  /** 30px - Titres de page */
   --font-size-3xl: 1.875rem;
-
-  /** 36px - Grandes métriques */
   --font-size-4xl: 2.25rem;
-
-  /** 48px - Métriques principales (KPIs) */
   --font-size-5xl: 3rem;
-
-  /** 60px - Métriques hero */
   --font-size-6xl: 3.75rem;
 
-  /* -------------------------------------------------------------------------
-   * 2.3 Poids de police
-   * ------------------------------------------------------------------------- */
-
-  /** 400 - Texte normal */
+  /* Poids */
   --font-weight-normal: 400;
-
-  /** 500 - Texte moyen (labels) */
   --font-weight-medium: 500;
-
-  /** 600 - Semi-gras (titres sections) */
   --font-weight-semibold: 600;
-
-  /** 700 - Gras (métriques, KPIs) */
   --font-weight-bold: 700;
 
-  /* -------------------------------------------------------------------------
-   * 2.4 Hauteurs de ligne
-   * ------------------------------------------------------------------------- */
-
-  /** Compact - Métriques, titres */
+  /* Hauteurs de ligne */
   --line-height-tight: 1.2;
-
-  /** Normal - Texte courant */
   --line-height-normal: 1.5;
-
-  /** Aéré - Paragraphes longs */
   --line-height-relaxed: 1.75;
 
   /* ========================================================================
-   * 3. ESPACEMENTS
-   *
-   * Système basé sur 8px (0.5rem)
-   * Utiliser ces valeurs pour margins, paddings, gaps
+   * 2. COULEURS — Palette editoriale chaude
    * ======================================================================== */
 
-  /** 4px */
+  /* Surfaces */
+  --paper: #fafaf7;
+  --paper-2: #f3f1ea;
+  --paper-3: #e9e5d9;
+
+  /* Encre (texte) */
+  --ink: #1a1a17;
+  --ink-2: #3a3a34;
+  --ink-3: #6b6b62;
+  --ink-mute: #9a9a8e;
+
+  /* Lignes (bordures) */
+  --line: #2a2a26;
+  --line-soft: #d8d3c4;
+  --line-hair: #ebe7da;
+
+  /* Accents */
+  --sage: #6b8559;
+  --sage-2: #9bb38a;
+  --sage-soft: #dee5d4;
+  --forest: #2a3e2d;
+
+  --amber: #c9a47a;
+  --amber-soft: #ecddc7;
+  --ochre: #a8865c;
+
+  --rust: #b07564;
+  --rust-soft: #e8d3ca;
+
+  --plum: #8a6e7e;
+  --plum-soft: #ddd0d6;
+
+  --sky: #8499ad;
+  --sky-soft: #d6dde4;
+
+  /* Semantique */
+  --ok: var(--sage);
+  --ok-soft: var(--sage-soft);
+  --warn: var(--ochre);
+  --warn-soft: var(--amber-soft);
+  --bad: var(--rust);
+  --bad-soft: var(--rust-soft);
+
+  /* Rayons */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+
+  /* Densite (multiplieur pour paddings/tailles) */
+  --density: 1;
+
+  /* ========================================================================
+   * 2b. ALIASES — Compatibilite code existant
+   *
+   * Les composants existants utilisent ces noms. On les mappe
+   * vers les nouveaux tokens pour eviter de tout casser d'un coup.
+   * ======================================================================== */
+
+  /* Backgrounds */
+  --color-bg-primary: var(--paper);
+  --color-bg-card: var(--paper);
+  --color-bg-secondary: var(--paper-2);
+  --color-bg-hover: var(--paper-3);
+  --color-bg-active: var(--sage-soft);
+
+  /* Textes */
+  --color-text-primary: var(--ink);
+  --color-text-secondary: var(--ink-2);
+  --color-text-muted: var(--ink-3);
+  --color-text-inverse: var(--paper);
+
+  /* Accents (ancien nommage) */
+  --color-accent-blue: var(--sage);
+  --color-accent-blue-light: var(--sage-soft);
+  --color-accent-blue-dark: var(--forest);
+  --color-accent-teal: var(--sky);
+  --color-accent-teal-light: var(--sky-soft);
+  --color-accent-teal-dark: var(--sky);
+  --color-accent-coral: var(--rust);
+  --color-accent-coral-light: var(--rust-soft);
+  --color-accent-coral-dark: var(--rust);
+  --color-accent-yellow: var(--amber);
+  --color-accent-yellow-light: var(--amber-soft);
+  --color-accent-yellow-dark: var(--ochre);
+  --color-accent-purple: var(--plum);
+  --color-accent-purple-light: var(--plum-soft);
+  --color-accent-purple-dark: var(--plum);
+  --color-accent-green: var(--sage);
+  --color-accent-green-light: var(--sage-soft);
+  --color-accent-green-dark: var(--forest);
+  --color-accent-orange: var(--amber);
+  --color-accent-orange-light: var(--amber-soft);
+  --color-accent-orange-dark: var(--ochre);
+
+  /* Etats */
+  --color-status-success: var(--sage);
+  --color-status-success-bg: var(--sage-soft);
+  --color-status-success-border: var(--sage-2);
+  --color-status-warning: var(--ochre);
+  --color-status-warning-bg: var(--amber-soft);
+  --color-status-warning-border: var(--amber);
+  --color-status-danger: var(--rust);
+  --color-status-danger-bg: var(--rust-soft);
+  --color-status-danger-border: var(--rust);
+  --color-status-info: var(--sky);
+  --color-status-info-bg: var(--sky-soft);
+  --color-status-info-border: var(--sky);
+
+  /* Bordures */
+  --color-border-default: var(--line-soft);
+  --color-border-focus: var(--ink);
+  --color-border-light: var(--line-hair);
+
+  /* ========================================================================
+   * 3. ESPACEMENTS (systeme 8px)
+   * ======================================================================== */
+
   --spacing-1: 0.25rem;
-
-  /** 8px */
   --spacing-2: 0.5rem;
-
-  /** 12px */
   --spacing-3: 0.75rem;
-
-  /** 16px */
   --spacing-4: 1rem;
-
-  /** 20px */
   --spacing-5: 1.25rem;
-
-  /** 24px */
   --spacing-6: 1.5rem;
-
-  /** 32px */
   --spacing-8: 2rem;
-
-  /** 40px */
   --spacing-10: 2.5rem;
-
-  /** 48px */
   --spacing-12: 3rem;
-
-  /** 64px */
   --spacing-16: 4rem;
-
-  /** 80px */
   --spacing-20: 5rem;
 
   /* ========================================================================
    * 4. BORDURES ET ARRONDIS
    * ======================================================================== */
 
-  /** Bordure standard */
   --border-width: 1px;
-
-  /** Bordure épaisse (focus, active) */
   --border-width-thick: 2px;
 
-  /* -------------------------------------------------------------------------
-   * 4.1 Rayons de bordure (border-radius)
-   * ------------------------------------------------------------------------- */
-
-  /** 4px - Petits éléments (badges, tags) */
-  --radius-sm: 0.25rem;
-
-  /** 6px - Boutons, inputs */
-  --radius-md: 0.375rem;
-
-  /** 8px - Cards compactes, toggles */
-  --radius-lg: 0.5rem;
-
-  /** 12px - Cards standards */
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
   --radius-xl: 0.75rem;
-
-  /** 16px - Grandes cards, modals */
   --radius-2xl: 1rem;
-
-  /** Cercle parfait */
   --radius-full: 9999px;
 
   /* ========================================================================
    * 5. OMBRES
-   *
-   * Ombres douces pour un rendu moderne et élégant
    * ======================================================================== */
 
-  /** Ombre légère - Éléments au repos */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-
-  /** Ombre moyenne - Cards, dropdowns */
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05),
-               0 2px 4px rgba(0, 0, 0, 0.05);
-
-  /** Ombre prononcée - Éléments en survol */
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05),
-               0 4px 6px rgba(0, 0, 0, 0.05);
-
-  /** Ombre forte - Modals, popovers */
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.08),
-               0 10px 10px rgba(0, 0, 0, 0.04);
-
-  /** Ombre pour les cards (effet de profondeur subtil) */
-  --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.05),
-                 0 1px 3px rgba(0, 0, 0, 0.1);
-
-  /** Ombre au survol des cards */
-  --shadow-card-hover: 0 6px 8px rgba(0, 0, 0, 0.07),
-                       0 2px 4px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
 
   /* ========================================================================
    * 6. TRANSITIONS
    * ======================================================================== */
 
-  /** Durées */
   --transition-fast: 150ms;
   --transition-normal: 200ms;
   --transition-slow: 300ms;
 
-  /** Easings */
   --ease-default: ease;
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
 
-  /** Transitions prédéfinies */
   --transition-colors: color var(--transition-normal) var(--ease-default),
                        background-color var(--transition-normal) var(--ease-default),
                        border-color var(--transition-normal) var(--ease-default);
-
   --transition-transform: transform var(--transition-normal) var(--ease-out);
-
   --transition-shadow: box-shadow var(--transition-normal) var(--ease-default);
-
   --transition-all: all var(--transition-normal) var(--ease-default);
 
   /* ========================================================================
    * 7. Z-INDEX
-   *
-   * Échelle pour gérer l'empilement des éléments
    * ======================================================================== */
 
-  /** Éléments de base */
   --z-base: 0;
-
-  /** Éléments légèrement surélevés (cards en hover) */
   --z-elevated: 10;
-
-  /** Dropdowns, menus */
   --z-dropdown: 100;
-
-  /** Navigation sticky */
   --z-sticky: 200;
-
-  /** Overlays (fond sombre derrière modal) */
   --z-overlay: 300;
-
-  /** Modals, dialogs */
   --z-modal: 400;
-
-  /** Tooltips, popovers */
   --z-tooltip: 500;
-
-  /** Notifications toast */
   --z-toast: 600;
 
   /* ========================================================================
-   * 8. DIMENSIONS SPÉCIFIQUES
+   * 8. DIMENSIONS
    * ======================================================================== */
 
-  /** Largeur maximale du contenu principal */
-  --max-width-content: 1400px;
-
-  /** Largeur de la sidebar admin */
-  --width-sidebar: 320px;
-
-  /** Hauteur du header */
-  --height-header: 80px;
-
-  /** Hauteur minimale des cards de métriques */
+  --max-width-content: 1480px;
+  --height-header: 56px;
   --height-metric-card: 160px;
-
-  /** Hauteur des graphiques */
   --height-chart: 300px;
   --height-chart-small: 200px;
 
   /* ========================================================================
-   * 9. COULEURS SPÉCIFIQUES AUX GRAPHIQUES (Chart.js)
-   *
-   * Palette ordonnée pour les datasets
+   * 9. CHART COLORS (via accents)
    * ======================================================================== */
 
-  /** Couleurs principales pour les séries de données */
-  --chart-color-1: var(--color-accent-blue);
-  --chart-color-2: var(--color-accent-teal);
-  --chart-color-3: var(--color-accent-coral);
-  --chart-color-4: var(--color-accent-yellow);
-  --chart-color-5: var(--color-accent-purple);
-  --chart-color-6: var(--color-accent-green);
-  --chart-color-7: var(--color-accent-orange);
+  --chart-color-1: var(--sage);
+  --chart-color-2: var(--amber);
+  --chart-color-3: var(--rust);
+  --chart-color-4: var(--plum);
+  --chart-color-5: var(--sky);
+  --chart-color-6: var(--sage-2);
+  --chart-color-7: var(--ochre);
 
-  /** Couleurs avec transparence pour les fonds de graphiques */
-  --chart-color-1-alpha: rgba(107, 155, 210, 0.2);
-  --chart-color-2-alpha: rgba(91, 181, 176, 0.2);
-  --chart-color-3-alpha: rgba(242, 139, 130, 0.2);
-  --chart-color-4-alpha: rgba(245, 200, 105, 0.2);
-  --chart-color-5-alpha: rgba(167, 139, 218, 0.2);
-  --chart-color-6-alpha: rgba(123, 196, 127, 0.2);
-  --chart-color-7-alpha: rgba(245, 169, 98, 0.2);
+  --chart-color-1-alpha: rgba(107, 133, 89, 0.15);
+  --chart-color-2-alpha: rgba(201, 164, 122, 0.15);
+  --chart-color-3-alpha: rgba(176, 117, 100, 0.15);
+  --chart-color-4-alpha: rgba(138, 110, 126, 0.15);
+  --chart-color-5-alpha: rgba(132, 153, 173, 0.15);
+  --chart-color-6-alpha: rgba(155, 179, 138, 0.15);
+  --chart-color-7-alpha: rgba(168, 134, 92, 0.15);
 
-  /** Ligne de référence (benchmark) */
-  --chart-color-reference: #94a3b8;
-  --chart-color-reference-alpha: rgba(148, 163, 184, 0.3);
+  --chart-color-reference: var(--ink-mute);
+  --chart-color-reference-alpha: rgba(154, 154, 142, 0.3);
 }
 
 /* ==========================================================================
- * BREAKPOINTS (pour référence)
+ * DARK MODE
+ * ========================================================================== */
+
+[data-theme="dark"] {
+  --paper: #14140f;
+  --paper-2: #1c1c17;
+  --paper-3: #25251f;
+  --line: #f0ebda;
+  --line-soft: #3a3a32;
+  --line-hair: #2a2a24;
+  --ink: #f0ebda;
+  --ink-2: #d4cfbe;
+  --ink-3: #9a9a8e;
+  --ink-mute: #6b6b62;
+  --sage-soft: #2c3a25;
+  --amber-soft: #3d2f1a;
+  --rust-soft: #3a201a;
+  --plum-soft: #2e1f29;
+  --sky-soft: #1f2a36;
+}
+
+/* ==========================================================================
+ * PALETTES ALTERNATIVES
+ * ========================================================================== */
+
+[data-palette="rose"] {
+  --sage: #a3505d;
+  --sage-2: #c08896;
+  --sage-soft: #ecd1d6;
+  --forest: #2a1418;
+  --amber: #d4a574;
+  --ochre: #a16d3c;
+  --rust: #7a3941;
+}
+
+[data-palette="ink"] {
+  --paper: #ffffff;
+  --paper-2: #f3f3f0;
+  --paper-3: #e6e6e1;
+  --sage: #1a3aa8;
+  --sage-2: #5d76c7;
+  --sage-soft: #d4dbf0;
+  --forest: #0a1230;
+  --amber: #1a1a17;
+  --ochre: #4a4a44;
+  --rust: #1a3aa8;
+}
+
+[data-palette="ink"][data-theme="dark"] {
+  --sage: #7d97e6;
+  --sage-soft: #1f2a4d;
+}
+
+/* ==========================================================================
+ * DENSITE
+ * ========================================================================== */
+
+[data-density="cozy"] {
+  --density: 1.15;
+}
+
+[data-density="compact"] {
+  --density: 0.78;
+}
+
+/* ==========================================================================
+ * VARIANTES TYPOGRAPHIQUES
+ * ========================================================================== */
+
+[data-typo="sans"] {
+  --font-display: "Inter", system-ui, sans-serif;
+}
+
+[data-typo="mono"] {
+  --font-display: "JetBrains Mono", monospace;
+  --font-body: "JetBrains Mono", monospace;
+}
+
+/* ==========================================================================
+ * BREAKPOINTS (pour reference)
  *
- * Utilisation dans les media queries :
- * @media (max-width: 1200px) { ... }  // Laptop
- * @media (max-width: 992px)  { ... }  // Tablet landscape
- * @media (max-width: 768px)  { ... }  // Tablet portrait
- * @media (max-width: 576px)  { ... }  // Mobile
- *
- * ÉCRANS CIBLES :
- * - Desktop/Projection : 1920×1080 (optimisé pour TV/Teams)
- * - Laptop : 1366×768
- * - Admin : 1024+ (section admin utilisable)
- * ==========================================================================
- */
+ * @media (max-width: 1200px) — Laptop
+ * @media (max-width: 1100px) — Tablet / grids collapse
+ * @media (max-width: 768px)  — Tablet portrait
+ * @media (max-width: 576px)  — Mobile
+ * ========================================================================== */

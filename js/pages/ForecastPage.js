@@ -60,6 +60,7 @@ export default class ForecastPage extends Component {
       forecastData: null,
       rawTickets: csvData?.tickets || null,
       excludedContributors: [],
+      headcountAdjustment: 0, // 0 = effectif complet, -1 = 1 personne en moins, etc.
       isExporting: false,
       isLoading: false,
       error: null,
@@ -175,6 +176,29 @@ export default class ForecastPage extends Component {
   }
 
   /**
+   * Retourne l'effectif original et ajusté
+   * @returns {{ original: number, adjusted: number, ratio: number }}
+   * @private
+   */
+  _getHeadcount() {
+    const { forecastData, headcountAdjustment } = this.state;
+    const original = forecastData?.contributors?.length || 1;
+    const adjusted = Math.max(1, original + headcountAdjustment);
+    return { original, adjusted, ratio: adjusted / original };
+  }
+
+  /**
+   * Applique le ratio d'effectif à une valeur
+   * @param {number} value
+   * @returns {number}
+   * @private
+   */
+  _adjustForHeadcount(value) {
+    const { ratio } = this._getHeadcount();
+    return Math.round(value * ratio);
+  }
+
+  /**
    * Après montage
    */
   afterMount() {
@@ -192,12 +216,116 @@ export default class ForecastPage extends Component {
       console.log('[ForecastPage] afterMount - Chargement des données forecast...');
       this._loadForecastData(csvData.tickets);
     }
+
+    // Initialiser l'histogramme si les données sont prêtes
+    this._initHistogram();
+  }
+
+  /**
+   * Après mise à jour
+   */
+  afterUpdate() {
+    this._initHistogram();
+  }
+
+  /**
+   * Initialise l'histogramme de distribution Monte Carlo
+   * @private
+   */
+  _initHistogram() {
+    const { forecastData } = this.state;
+    if (!forecastData || !forecastData.simulation) return;
+
+    const canvas = this.container?.querySelector('#forecast-histo');
+    if (!canvas) return;
+
+    // Détruire l'ancien chart si existant
+    if (this._histoChart) {
+      this._histoChart.destroy();
+      this._histoChart = null;
+    }
+
+    const distribution = forecastData.simulation.throughput.distribution;
+    if (!distribution || distribution.length === 0) return;
+
+    const p15 = forecastData.simulation.throughput.p15;
+    const p50 = forecastData.simulation.throughput.p50;
+    const p85 = forecastData.simulation.throughput.p85;
+
+    const labels = distribution.map(d => d.value);
+    const data = distribution.map(d => d.count);
+
+    // Lire les couleurs CSS
+    const cs = getComputedStyle(document.documentElement);
+    const rustSoft = cs.getPropertyValue('--rust-soft').trim();
+    const amberSoft = cs.getPropertyValue('--amber-soft').trim();
+    const sageSoft = cs.getPropertyValue('--sage-soft').trim();
+    const ink = cs.getPropertyValue('--ink').trim();
+    const ink3 = cs.getPropertyValue('--ink-3').trim();
+    const lineHair = cs.getPropertyValue('--line-hair').trim();
+
+    // Couleur par barre selon percentile
+    const colors = labels.map(v => {
+      if (v === p50) return ink;
+      if (v <= p15) return rustSoft;
+      if (v >= p85) return sageSoft;
+      return amberSoft;
+    });
+
+    this._histoChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: colors,
+          barPercentage: 0.95,
+          categoryPercentage: 0.95
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: ink,
+            titleFont: { family: 'JetBrains Mono', size: 10 },
+            bodyFont: { family: 'Inter', size: 12 },
+            padding: 8,
+            cornerRadius: 4,
+            callbacks: {
+              title: (items) => `${items[0].label} tickets`,
+              label: (item) => `${item.raw.toLocaleString()} simulations`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            border: { color: ink3 },
+            ticks: {
+              color: ink3,
+              font: { family: 'JetBrains Mono', size: 10 },
+              callback: (value, index) => index % 4 === 0 ? labels[index] : ''
+            }
+          },
+          y: { display: false }
+        }
+      }
+    });
   }
 
   /**
    * Avant démontage
    */
   beforeUnmount() {
+    // Détruire l'histogramme
+    if (this._histoChart) {
+      this._histoChart.destroy();
+      this._histoChart = null;
+    }
+
     Object.values(this.components).forEach(component => {
       if (component && typeof component.unmount === 'function') {
         component.unmount();
@@ -226,52 +354,76 @@ export default class ForecastPage extends Component {
       return this._renderEmptyState();
     }
 
+    const sprintNumbers = forecastData.sprintNumbers;
+    const sprintRange = sprintNumbers.length > 0
+      ? `Sprints ${sprintNumbers[0]} → ${sprintNumbers[sprintNumbers.length - 1]}`
+      : '';
+
     return `
       <div class="forecast-page" id="section-forecast">
         ${this._renderHeader()}
 
         <div class="forecast-page__content">
-          <!-- Scénarios Monte Carlo -->
-          <section class="forecast-section forecast-section--scenarios">
-            <div class="forecast-section__header">
-              <h3 class="forecast-section__title">Vélocité Sprint ${forecastData.nextSprint}</h3>
-              <p class="forecast-section__subtitle">
-                Basée sur ${forecastData.simulation.iterations.toLocaleString()} simulations Monte Carlo
+          <!-- Section 1 : Scenarios -->
+          <div class="section--editorial" style="border-top:0;padding-top:0;margin-top:0">
+            <div class="section__head">
+              <div class="section__title">
+                <span class="section__num">§ 01 — Trois scénarios</span>
+                <h2 class="h-section">Pessimiste · Réaliste · Optimiste</h2>
+              </div>
+              <span class="dek section__deck">
+                P15 / P50 / P85 — ${forecastData.simulation.iterations.toLocaleString()} simulations Monte Carlo.
                 <button class="help-btn" data-action="show-monte-carlo-help" title="Qu'est-ce que Monte Carlo ?">?</button>
-                ${excludedContributors.length > 0 ? `<span class="subtitle-warning">(${excludedContributors.length} absence(s) simulée(s))</span>` : ''}
-              </p>
+                ${excludedContributors.length > 0 ? `<span class="pill pill--warn" style="margin-left:8px">${excludedContributors.length} absence(s)</span>` : ''}
+              </span>
             </div>
-            <div class="forecast-section__content">
-              ${this._renderScenarios()}
+            ${this._renderScenarios()}
+          </div>
+
+          <!-- Section 2 : Distribution -->
+          <div class="section--editorial">
+            <div class="section__head">
+              <div class="section__title">
+                <span class="section__num">§ 02 — Distribution</span>
+                <h2 class="h-section">Probabilités de livraison</h2>
+              </div>
+              <span class="dek section__deck">Chaque barre = nombre de simulations ayant terminé à ce throughput.</span>
             </div>
-          </section>
+            <div class="dist">
+              <div style="height:280px"><canvas id="forecast-histo"></canvas></div>
+              <div class="legend" style="margin-top:12px">
+                <span class="legend__item"><span class="legend__sw" style="background:var(--rust-soft)"></span>≤ P15 — pessimiste</span>
+                <span class="legend__item"><span class="legend__sw" style="background:var(--amber-soft)"></span>P15 → P85 — zone de confiance</span>
+                <span class="legend__item"><span class="legend__sw" style="background:var(--sage-soft)"></span>≥ P85 — optimiste</span>
+                <span class="legend__item"><span class="legend__sw" style="background:var(--ink)"></span>P50 — médiane</span>
+              </div>
+            </div>
+          </div>
 
           ${showIndividualSections ? `
-          <!-- Gestion des absences (section secrète) -->
-          <section class="forecast-section forecast-section--absences">
-            <div class="forecast-section__header">
-              <h3 class="forecast-section__title">Simuler des absences</h3>
-              <p class="forecast-section__subtitle">
-                Cochez les contributeurs absents pour recalculer automatiquement les prévisions
-              </p>
+          <!-- Section 3 : Absences (secrete) -->
+          <div class="section--editorial">
+            <div class="section__head">
+              <div class="section__title">
+                <span class="section__num">§ 03 — Absences</span>
+                <h2 class="h-section">Simuler des absences</h2>
+              </div>
+              <span class="dek section__deck">Cochez les contributeurs absents pour recalculer.</span>
             </div>
-            <div class="forecast-section__content">
-              ${this._renderAbsenceSelector()}
-            </div>
-          </section>
+            ${this._renderAbsenceSelector()}
+          </div>
 
-          <!-- Contributeurs (section secrète) -->
-          <section class="forecast-section forecast-section--contributors">
-            <div class="forecast-section__header">
-              <h3 class="forecast-section__title">Simulation par contributeur</h3>
-              <p class="forecast-section__subtitle">
-                Basée sur les Sprints ${forecastData.sprintNumbers[0]} à ${forecastData.sprintNumbers[forecastData.sprintNumbers.length - 1]}
-              </p>
+          <!-- Section 4 : Contributeurs (secrete) -->
+          <div class="section--editorial">
+            <div class="section__head">
+              <div class="section__title">
+                <span class="section__num">§ 04 — Contributeurs</span>
+                <h2 class="h-section">Simulation individuelle</h2>
+              </div>
+              <span class="dek section__deck">Basée sur les ${sprintRange}</span>
             </div>
-            <div class="forecast-section__content">
-              ${this._renderContributorsTable()}
-            </div>
-          </section>
+            ${this._renderContributorsTable()}
+          </div>
           ` : ''}
 
         </div>
@@ -308,7 +460,7 @@ export default class ForecastPage extends Component {
               <p>Plutôt que de fixer un objectif unique basé sur une moyenne, cette approche permet de définir des objectifs réalistes avec un niveau de confiance connu.</p>
             </div>
             <div class="modal__footer">
-              <button class="btn btn--primary" data-action="close-modal">Merci, bonne histoire pour la machine à café ça !</button>
+              <button class="btn btn--primary" data-action="close-modal">Compris !</button>
             </div>
           </div>
         </div>
@@ -322,25 +474,42 @@ export default class ForecastPage extends Component {
    * @private
    */
   _renderHeader() {
-    const { isExporting, forecastData } = this.state;
+    const { isExporting, forecastData, excludedContributors } = this.state;
     const currentState = store.getState();
     const teamName = currentState.manualInput?.teamName || 'Équipe';
+    const nextSprint = forecastData?.nextSprint || '';
+    const sprintNumbers = forecastData?.sprintNumbers || [];
+    const contributors = forecastData?.contributors || [];
+    const hc = this._getHeadcount();
 
     return `
-      <header class="forecast-page__header">
-        <div class="forecast-page__header-info">
-          <h2 class="forecast-page__title">${teamName}</h2>
-          <p class="forecast-page__team">Forecast Sprint ${forecastData?.nextSprint || ''}</p>
+      <div class="cover">
+        <div>
+          <div class="eyebrow" style="margin-bottom:12px">§ 00 — Projection · ${forecastData?.simulation?.iterations?.toLocaleString() || '10 000'} simulations</div>
+          <h1 class="h-display">Ce que <em>Sprint ${nextSprint}</em> pourrait livrer.</h1>
+          <p class="lede" style="margin-top:18px">Approche Monte Carlo : pour chaque membre de ${teamName}, on tire au hasard une performance passée, puis on lit la distribution.</p>
+          <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;align-items:center">
+            ${sprintNumbers.length > 0 ? `<span class="pill pill--ghost">Basé sur Sprints ${sprintNumbers[0]} → ${sprintNumbers[sprintNumbers.length - 1]}</span>` : ''}
+            <span class="pill pill--ghost" style="display:inline-flex;align-items:center;gap:6px">
+              <button class="headcount-btn" data-action="headcount-minus" ${hc.adjusted <= 1 ? 'disabled' : ''}>−</button>
+              <span class="tnum">${hc.adjusted}</span> contributeur${hc.adjusted > 1 ? 's' : ''}
+              <button class="headcount-btn" data-action="headcount-plus" ${hc.adjusted >= hc.original ? 'disabled' : ''}>+</button>
+            </span>
+            ${hc.adjusted < hc.original ? `<span class="pill pill--warn">${hc.original - hc.adjusted} absence${hc.original - hc.adjusted > 1 ? 's' : ''} simulée${hc.original - hc.adjusted > 1 ? 's' : ''}</span>` : ''}
+            ${excludedContributors.length > 0 ? `<span class="pill pill--warn">${excludedContributors.length} exclu(s)</span>` : ''}
+          </div>
         </div>
-
-        <div class="forecast-page__header-actions">
-          <button class="btn btn--primary"
-                  data-action="export-md"
-                  ${isExporting ? 'disabled' : ''}>
-            ${isExporting ? 'Export...' : 'Exporter'}
-          </button>
+        <div style="text-align:right">
+          <div class="cover__sprintno"><sup>S</sup>${nextSprint}</div>
+          <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn--editorial-ghost btn--editorial-small"
+                    data-action="export-md"
+                    ${isExporting ? 'disabled' : ''}>
+              ${isExporting ? 'Export...' : 'Exporter Markdown'}
+            </button>
+          </div>
         </div>
-      </header>
+      </div>
     `;
   }
 
@@ -352,32 +521,38 @@ export default class ForecastPage extends Component {
   _renderScenarios() {
     const { forecastData } = this.state;
     const scenarios = forecastData.scenarios;
+    const hc = this._getHeadcount();
+
+    // Map existing scenario IDs to editorial class names
+    const kindMap = { pessimistic: 'p15', realistic: 'p50', optimistic: 'p85' };
 
     return `
-      <div class="scenarios-grid">
-        ${scenarios.map(scenario => `
-          <div class="scenario-card scenario-card--${scenario.color}">
-            <div class="scenario-card__header">
-              <span class="scenario-card__label">${scenario.label}</span>
-              <span class="scenario-card__confidence">${scenario.confidence}% de chances</span>
-            </div>
-            <div class="scenario-card__body">
-              <div class="scenario-card__metric">
-                <span class="scenario-card__value">${scenario.throughput}</span>
-                <span class="scenario-card__unit">tickets</span>
+      <div class="scenarios">
+        ${scenarios.map(scenario => {
+          const kind = kindMap[scenario.id] || 'p50';
+          const adjThroughput = this._adjustForHeadcount(scenario.throughput);
+          const adjSP = this._adjustForHeadcount(scenario.storyPoints);
+          return `
+            <div class="scenario scenario--${kind}">
+              <div class="scenario__head">
+                <span class="scenario__name">${scenario.label}</span>
+                <span class="scenario__conf">${scenario.confidence}% de chances</span>
               </div>
-              ${forecastData.validation.hasStoryPoints ? `
-                <div class="scenario-card__metric">
-                  <span class="scenario-card__value">${scenario.storyPoints}</span>
-                  <span class="scenario-card__unit">story points</span>
+              <div>
+                <div class="scenario__big tnum">${adjThroughput}</div>
+                <div class="scenario__sub">
+                  <span>tickets</span>
+                  ${forecastData.validation.hasStoryPoints ? `
+                    <span>·</span>
+                    <b>${adjSP}</b>
+                    <span>story points</span>
+                  ` : ''}
                 </div>
-              ` : ''}
+              </div>
+              <p class="scenario__desc">${scenario.description}${hc.adjusted < hc.original ? ` (ajusté pour ${hc.adjusted}/${hc.original} contributeurs)` : ''}</p>
             </div>
-            <div class="scenario-card__footer">
-              <span class="scenario-card__description">${scenario.description}</span>
-            </div>
-          </div>
-        `).join('')}
+          `;
+        }).join('')}
       </div>
     `;
   }
@@ -559,7 +734,9 @@ export default class ForecastPage extends Component {
       'click [data-action="clear-absences"]': this._handleClearAbsences,
       'click [data-action="show-monte-carlo-help"]': this._handleShowHelp,
       'click [data-action="close-modal"]': this._handleCloseModal,
-      'click .modal-overlay': this._handleOverlayClick
+      'click .modal-overlay': this._handleOverlayClick,
+      'click [data-action="headcount-minus"]': this._handleHeadcountMinus,
+      'click [data-action="headcount-plus"]': this._handleHeadcountPlus
     };
   }
 
@@ -696,5 +873,27 @@ export default class ForecastPage extends Component {
   _handleClearAbsences() {
     this.state.excludedContributors = [];
     this._recalculateForecast();
+  }
+
+  /**
+   * Diminue l'effectif simulé
+   * @private
+   */
+  _handleHeadcountMinus() {
+    const { original } = this._getHeadcount();
+    const newAdj = this.state.headcountAdjustment - 1;
+    if (original + newAdj >= 1) {
+      this.setState({ headcountAdjustment: newAdj });
+    }
+  }
+
+  /**
+   * Augmente l'effectif simulé (jusqu'à l'original)
+   * @private
+   */
+  _handleHeadcountPlus() {
+    if (this.state.headcountAdjustment < 0) {
+      this.setState({ headcountAdjustment: this.state.headcountAdjustment + 1 });
+    }
   }
 }

@@ -26,39 +26,39 @@ const config = {
    * Palette de couleurs principale (avec nuances)
    */
   colors: {
-    // Primary (Blue)
+    // Primary (Slate Blue - Editorial)
     primary: {
-      50: '#eff6ff',
-      100: '#dbeafe',
-      200: '#bfdbfe',
-      300: '#93c5fd',
-      400: '#60a5fa',
-      500: '#3b82f6',
-      600: '#2563eb',
-      700: '#1d4ed8'
+      50: '#f7f9fb',
+      100: '#e8eff3',
+      200: '#d9e4ea',
+      300: '#cad5ed',
+      400: '#a9b4b9',
+      500: '#545f73',
+      600: '#485367',
+      700: '#3d4759'
     },
-    // Secondary (Teal)
+    // Secondary (Tertiary - Muted Blue)
     secondary: {
-      50: '#f0fdfa',
-      100: '#ccfbf1',
-      200: '#99f6e4',
-      300: '#5eead4',
-      400: '#2dd4bf',
-      500: '#14b8a6',
-      600: '#0d9488',
-      700: '#0f766e'
+      50: '#f9f8ff',
+      100: '#dae2fd',
+      200: '#ccd4ee',
+      300: '#b0b8d4',
+      400: '#8a92aa',
+      500: '#575f75',
+      600: '#4b5369',
+      700: '#373f54'
     },
-    // Gray
+    // Gray (Surface system)
     gray: {
-      50: '#f8fafc',
-      100: '#f1f5f9',
-      200: '#e2e8f0',
-      300: '#cbd5e1',
-      400: '#94a3b8',
-      500: '#64748b',
-      600: '#475569',
-      700: '#334155',
-      800: '#1e293b'
+      50: '#f7f9fb',
+      100: '#f0f4f7',
+      200: '#e1e9ee',
+      300: '#cfdce3',
+      400: '#a9b4b9',
+      500: '#717c82',
+      600: '#566166',
+      700: '#2a3439',
+      800: '#0b0f10'
     },
     // Success (Green)
     success: {
@@ -76,55 +76,56 @@ const config = {
       500: '#f59e0b',
       600: '#d97706'
     },
-    // Danger (Red)
+    // Danger (Red - Editorial deep red)
     danger: {
-      50: '#fef2f2',
+      50: '#fff7f6',
       100: '#fee2e2',
-      400: '#f87171',
-      500: '#ef4444',
-      600: '#dc2626'
+      400: '#fe8983',
+      500: '#9f403d',
+      600: '#752121'
     },
     // Ligne de référence
-    reference: '#94a3b8',
-    referenceAlpha: 'rgba(148, 163, 184, 0.3)'
+    reference: '#a9b4b9',
+    referenceAlpha: 'rgba(169, 180, 185, 0.3)'
   },
 
   /**
    * Palette de couleurs pour les graphiques (tableau pour itération)
+   * Style éditorial : tons sourds, bleu-ardoise dominant
    */
   chartColors: [
-    '#3b82f6', // blue
-    '#14b8a6', // teal
-    '#f59e0b', // yellow
-    '#ef4444', // red
-    '#8b5cf6', // purple
-    '#22c55e', // green
-    '#f97316', // orange
-    '#ec4899'  // pink
+    '#6b8559', // sage
+    '#c9a47a', // amber
+    '#b07564', // rust
+    '#8a6e7e', // plum
+    '#8499ad', // sky
+    '#9bb38a', // sage-2
+    '#a8865c', // ochre
+    '#2a3e2d'  // forest
   ],
 
   /**
    * Couleurs assignées aux métriques
    */
   metricColors: {
-    throughput: '#6b9bd2',    // Bleu
-    cycleTime: '#5bb5b0',     // Teal
-    timeInStatus: '#a78bda',  // Purple
-    bugs: '#f28b82',          // Coral
-    velocity: '#7bc47f',      // Green
-    capacity: '#f5c869'       // Yellow
+    throughput: '#6b8559',    // sage
+    cycleTime: '#c9a47a',     // amber
+    timeInStatus: '#8a6e7e',  // plum
+    bugs: '#b07564',          // rust
+    velocity: '#6b8559',      // sage
+    capacity: '#8499ad'       // sky
   },
 
   /**
    * Couleurs pour Time in Status (donut chart)
    */
   statusColors: {
-    'En cours': '#6b9bd2',
-    'Code Review': '#5bb5b0',
-    'A déployer en env de recette': '#f5c869',
-    'A tester': '#a78bda',
-    'A déployer en PROD': '#f5a962',
-    'A valider': '#7bc47f'
+    'En cours': '#6b8559',
+    'Code Review': '#c9a47a',
+    'A déployer en env de recette': '#8499ad',
+    'A tester': '#8a6e7e',
+    'A déployer en PROD': '#a8865c',
+    'A valider': '#9bb38a'
   },
 
   // =========================================================================
@@ -253,18 +254,18 @@ const config = {
    * Options par défaut pour Chart.js
    */
   chartDefaults: {
-    // Police (raccourci)
-    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    // Police (raccourci) - Inter pour les labels, JetBrains Mono pour les chiffres
+    fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
 
     // Police (détaillé)
     font: {
-      family: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      size: 12
+      family: "'Inter', -apple-system, system-ui, sans-serif",
+      size: 11
     },
 
     // Animation
     animation: {
-      duration: 300,
+      duration: 400,
       easing: 'easeOutQuart'
     },
 
@@ -279,43 +280,57 @@ const config = {
         labels: {
           padding: 16,
           usePointStyle: true,
-          pointStyle: 'circle'
+          pointStyle: 'rectRounded',
+          font: {
+            family: "'Inter', sans-serif",
+            size: 10,
+            weight: '500'
+          },
+          color: '#6b6b62'
         }
       },
       tooltip: {
-        backgroundColor: 'rgba(30, 41, 59, 0.95)',
-        titleColor: '#ffffff',
-        bodyColor: '#e2e8f0',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
+        backgroundColor: '#1a1a17',
+        titleColor: '#fafaf7',
+        bodyColor: '#e9e5d9',
+        borderColor: 'rgba(255, 255, 255, 0.08)',
         borderWidth: 1,
         padding: 12,
-        cornerRadius: 8,
-        displayColors: true
+        cornerRadius: 6,
+        displayColors: true,
+        titleFont: {
+          family: "'JetBrains Mono', monospace",
+          weight: '500'
+        },
+        bodyFont: {
+          family: "'Inter', sans-serif"
+        }
       }
     }
   },
 
   /**
    * Options spécifiques par type de graphique
+   * Style éditorial : barres arrondies en haut, tons gris, ligne courbe
    */
   chartTypes: {
     bar: {
-      borderRadius: 4,
-      borderSkipped: false,
-      barPercentage: 0.7,
-      categoryPercentage: 0.8
+      borderRadius: 3,
+      borderSkipped: 'bottom',
+      barPercentage: 0.65,
+      categoryPercentage: 0.75
     },
     line: {
       tension: 0.4,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      borderWidth: 2,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      borderWidth: 2.5,
       fill: false
     },
     doughnut: {
-      cutout: '65%',
+      cutout: '70%',
       borderWidth: 0,
-      hoverBorderWidth: 2,
+      hoverBorderWidth: 0,
       hoverOffset: 4
     }
   },
@@ -430,6 +445,43 @@ const config = {
    */
   defaultTeamName: 'Data Tribe TF1'
 };
+
+// =========================================================================
+// HELPERS
+// =========================================================================
+
+/**
+ * Lit une variable CSS depuis l'element racine
+ * @param {string} name - Nom de la variable (ex: '--sage')
+ * @returns {string}
+ */
+export function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+/**
+ * Retourne la palette de couleurs courante (resout les CSS vars)
+ * Utile pour Chart.js qui ne lit pas les CSS vars nativement.
+ * @returns {Object}
+ */
+export function chartPalette() {
+  return {
+    ink: cssVar('--ink'),
+    ink3: cssVar('--ink-3'),
+    sage: cssVar('--sage'),
+    sageSoft: cssVar('--sage-soft'),
+    amber: cssVar('--amber'),
+    amberSoft: cssVar('--amber-soft'),
+    rust: cssVar('--rust'),
+    rustSoft: cssVar('--rust-soft'),
+    plum: cssVar('--plum'),
+    plumSoft: cssVar('--plum-soft'),
+    sky: cssVar('--sky'),
+    skySoft: cssVar('--sky-soft'),
+    line: cssVar('--line-hair'),
+    paper: cssVar('--paper')
+  };
+}
 
 // =========================================================================
 // EXPORT

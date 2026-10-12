@@ -22,10 +22,11 @@
  * Container blanc avec ombre et coins arrondis
  */
 .card {
-  background-color: var(--color-bg-card);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-card);
-  transition: var(--transition-shadow), var(--transition-transform);
+  background: var(--paper);
+  border-radius: var(--r-md);
+  box-shadow: none;
+  border: 1px solid var(--line-soft);
+  transition: all 120ms;
   overflow: hidden;
 }
 
@@ -79,6 +80,7 @@
 }
 
 .card__title {
+  font-family: var(--font-family-headline);
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
@@ -103,31 +105,18 @@
   background-color: var(--color-bg-card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
-  padding: var(--spacing-5);
+  border: 1px solid var(--color-border-light);
+  padding: var(--spacing-6);
   min-height: var(--height-metric-card);
   display: flex;
   flex-direction: column;
-  transition: var(--transition-shadow), var(--transition-transform);
+  transition: var(--transition-shadow);
   position: relative;
   overflow: hidden;
 }
 
 .metric-card:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-card-hover);
-}
-
-/**
- * Barre d'accent colorée en haut
- */
-.metric-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background-color: var(--metric-color, var(--color-accent-blue));
 }
 
 /**
@@ -144,8 +133,6 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   margin: 0;
 }
 
@@ -172,10 +159,12 @@
 }
 
 .metric-card__value {
+  font-family: var(--font-family-headline);
   font-size: var(--font-size-5xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   line-height: var(--line-height-tight);
+  letter-spacing: -0.02em;
   margin-bottom: var(--spacing-1);
 }
 
@@ -286,6 +275,7 @@
   background-color: var(--color-bg-card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border-light);
   padding: var(--spacing-5);
   display: flex;
   align-items: flex-start;

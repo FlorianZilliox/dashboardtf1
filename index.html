@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Dashboard de Sprint Review pour équipes Agile - Visualisation des métriques et forecast">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#6b8559">
 
   <title>Sprint Review Dashboard</title>
 
@@ -14,7 +14,9 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
   <!-- CSS -->
   <!-- Design System -->
@@ -34,6 +36,7 @@
   <link rel="stylesheet" href="css/components/charts.css">
   <link rel="stylesheet" href="css/components/loader.css">
   <link rel="stylesheet" href="css/components/navigation.css">
+  <link rel="stylesheet" href="css/components/tweaks.css">
 
   <!-- Pages -->
   <link rel="stylesheet" href="css/pages/admin.css">
@@ -56,28 +59,21 @@
   <!-- Application Container -->
   <div id="app" class="app">
 
-    <!-- Header avec Navigation intégrée -->
-    <header id="app-header" class="header">
-      <div class="header__brand">
-        <h1 class="header__title">Sprint Review</h1>
+    <!-- Masthead Navigation -->
+    <header id="app-header" class="masthead">
+      <div class="masthead__top">
+        <div class="masthead__brand">
+          <span class="masthead__brand-mark">Sprint Review</span>
+        </div>
+        <div class="masthead__edition" id="header-sprint-info"></div>
       </div>
-
-      <!-- Navigation intégrée dans le header -->
-      <nav id="app-nav" class="header__nav">
-        <!-- Navigation Component sera monté ici -->
+      <!-- Navigation Component sera monte ici -->
+      <nav id="app-nav" class="masthead__nav">
       </nav>
-
-      <div class="header__info">
-        <span class="header__sprint" id="header-sprint-info">
-          <!-- Rempli dynamiquement -->
-        </span>
-        <button class="header__info-btn" id="rgpd-info-btn" title="Conformité RGPD" aria-label="Informations RGPD">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </button>
-      </div>
     </header>
+
+    <!-- Main wrapper -->
+    <div class="app__main-wrapper">
 
     <!-- Modal RGPD -->
     <div class="modal-overlay" id="rgpd-modal">
@@ -207,7 +203,42 @@
       <!-- Notifications dynamiques -->
     </div>
 
+    </div><!-- /app__main-wrapper -->
   </div>
+
+  <!-- Tweaks Panel -->
+  <button id="twk-fab" class="twk-fab" aria-label="Personnaliser" title="Personnaliser l'affichage">⚙</button>
+  <aside class="twk-panel" id="twk-panel" hidden>
+    <div class="twk-hd">
+      <b>Tweaks</b>
+      <button class="twk-x" id="twk-close" aria-label="Fermer">&times;</button>
+    </div>
+    <div class="twk-body">
+      <div class="twk-section">Palette</div>
+      <div class="twk-seg" data-tweak="palette">
+        <button data-value="earth" aria-checked="true">Sauge</button>
+        <button data-value="rose">Rose</button>
+        <button data-value="ink">Encre</button>
+      </div>
+      <div class="twk-section">Densité</div>
+      <div class="twk-seg" data-tweak="density">
+        <button data-value="compact">Dense</button>
+        <button data-value="normal" aria-checked="true">Normal</button>
+        <button data-value="cozy">Aéré</button>
+      </div>
+      <div class="twk-section">Typographie</div>
+      <div class="twk-seg" data-tweak="typo">
+        <button data-value="editorial" aria-checked="true">Éditorial</button>
+        <button data-value="sans">Sans</button>
+        <button data-value="mono">Mono</button>
+      </div>
+      <div class="twk-section">Thème</div>
+      <label class="twk-toggle">
+        <input type="checkbox" id="twk-dark">
+        <span>Mode sombre</span>
+      </label>
+    </div>
+  </aside>
 
   <!-- Module JavaScript -->
   <script type="module" src="js/main.js"></script>
@@ -227,15 +258,18 @@
       }
 
       // Modal RGPD
-      const rgpdBtn = document.getElementById('rgpd-info-btn');
+      const rgpdBtns = document.querySelectorAll('[data-action="show-rgpd"]');
+      const rgpdBtnArray = Array.from(rgpdBtns);
       const rgpdModal = document.getElementById('rgpd-modal');
       const rgpdClose = document.getElementById('rgpd-modal-close');
 
-      if (rgpdBtn && rgpdModal) {
+      if (rgpdBtnArray.length && rgpdModal) {
         // Ouvrir la modal
-        rgpdBtn.addEventListener('click', function() {
-          rgpdModal.classList.add('modal-overlay--visible');
-          document.body.style.overflow = 'hidden';
+        rgpdBtnArray.forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            rgpdModal.classList.add('modal-overlay--visible');
+            document.body.style.overflow = 'hidden';
+          });
         });
 
         // Fermer avec le bouton X
@@ -292,7 +326,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: #f8fafc;
+      background: #fafaf7;
       z-index: 9999;
       transition: opacity 0.3s ease;
     }
@@ -300,15 +334,15 @@
     .app-loader .loader {
       width: 48px;
       height: 48px;
-      border: 4px solid #e2e8f0;
-      border-top-color: #2563eb;
+      border: 4px solid #d8d3c4;
+      border-top-color: #6b8559;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
 
     .app-loader p {
       margin-top: 16px;
-      color: #64748b;
+      color: #3a3a34;
       font-family: 'Inter', system-ui, sans-serif;
     }
 

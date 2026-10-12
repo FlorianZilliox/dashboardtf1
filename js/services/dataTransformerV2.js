@@ -527,6 +527,24 @@ function transformStoryPointsV2(sprintData, tickets) {
     ? Math.round((currentDelivered / currentCommitted) * 100)
     : 0;
 
+  // SP mid-sprint du sprint actuel (ajouts en cours de sprint)
+  const currentSprintRaw = sprintData[sprintData.length - 1];
+  const midSprintAdditions = currentSprintRaw?.midSprintAdditions || [];
+  const midSprintSP = midSprintAdditions.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+  const midSprintDeliveredSP = midSprintAdditions
+    .filter(t => t.isFinished)
+    .reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+
+  // Engagement initial = committed sans les ajouts mid-sprint
+  const initialCommitted = currentCommitted - midSprintSP;
+  const initialDelivered = currentDelivered - midSprintDeliveredSP;
+  const initialCompletion = initialCommitted > 0
+    ? Math.round((initialDelivered / initialCommitted) * 100)
+    : 0;
+
+  console.log('[V2 StoryPoints] Mid-sprint:', midSprintSP, 'SP ajoutés,', midSprintDeliveredSP, 'SP livrés');
+  console.log('[V2 StoryPoints] Engagement initial:', initialCommitted, 'SP engagés,', initialDelivered, 'livrés →', initialCompletion + '%');
+
   // Sprints précédents (tous sauf le dernier)
   const previousSprints = sprints.slice(0, -1).filter(s => s.committed > 0);
 
@@ -575,6 +593,13 @@ function transformStoryPointsV2(sprintData, tickets) {
     currentDelivered,
     currentCompletion,
     currentSprintLabel: currentSprint?.label || '',
+
+    // Engagement initial (hors mid-sprint)
+    initialCommitted,
+    initialDelivered,
+    initialCompletion,
+    midSprintSP,
+    midSprintDeliveredSP,
 
     // Moyennes historiques
     avgCommitted,

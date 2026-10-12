@@ -15,7 +15,6 @@
 
 import Component from '../components/Component.js';
 import FileUploader from '../components/FileUploader.js';
-import SprintGoals from '../components/SprintGoals.js';
 import store from '../core/store.js';
 import eventBus from '../core/eventBus.js';
 import config from '../core/config.js';
@@ -33,7 +32,6 @@ export default class AdminPage extends Component {
 
     // Sous-composants
     this.fileUploader = null;
-    this.sprintGoals = null;
   }
 
   /**
@@ -114,15 +112,6 @@ export default class AdminPage extends Component {
     );
     this.fileUploader.mount();
 
-    // Initialiser les Sprint Goals
-    this.sprintGoals = new SprintGoals(
-      this.$('[data-component="sprint-goals"]'),
-      {
-        editable: true,
-        goals: store.getState().sprintGoals || []
-      }
-    );
-    this.sprintGoals.mount();
   }
 
   /**
@@ -135,9 +124,6 @@ export default class AdminPage extends Component {
 
     if (this.fileUploader) {
       this.fileUploader.unmount();
-    }
-    if (this.sprintGoals) {
-      this.sprintGoals.unmount();
     }
   }
 
@@ -342,7 +328,7 @@ export default class AdminPage extends Component {
    */
   _updateStoryPointsSection() {
     // Trouver la section Story Points
-    const spSection = this.container?.querySelector('.admin-section--compact:last-child .admin-section__content--compact');
+    const spSection = this.container?.querySelector('[data-section="story-points"] .admin-section__content--compact');
     if (spSection) {
       spSection.innerHTML = this._renderStoryPointsForm();
     }
@@ -354,7 +340,7 @@ export default class AdminPage extends Component {
    */
   _updateSprintSelector() {
     // Re-rendre le formulaire d'infos sprint
-    const formContainer = this.$('.admin-section--compact .admin-section__content--compact');
+    const formContainer = this.container?.querySelector('[data-section="sprint-info"] .admin-section__content--compact');
     if (formContainer) {
       formContainer.innerHTML = this._renderSprintInfoForm();
 
@@ -419,6 +405,16 @@ export default class AdminPage extends Component {
    * @private
    */
   _handleFileLoaded(type, data, filename) {
+    const duplicateKeys = data?.duplicateKeys || data?.summary?.duplicateKeys || [];
+
+    if (duplicateKeys.length > 0) {
+      eventBus.emit('notification:show', {
+        type: 'warning',
+        message: `${filename} chargé — ${duplicateKeys.length} ticket(s) présent(s) sur plusieurs lignes (même clé Jira), compté(s) une seule fois`
+      });
+      return;
+    }
+
     eventBus.emit('notification:show', {
       type: 'info',
       message: `${filename} chargé`
@@ -501,7 +497,6 @@ export default class AdminPage extends Component {
         sprintName: 'Sprint',
         storyPoints: emptyStoryPoints
       },
-      sprintGoals: []
     });
 
     // Réinitialiser l'état local
@@ -519,11 +514,6 @@ export default class AdminPage extends Component {
     // Réinitialiser le FileUploader
     if (this.fileUploader) {
       this.fileUploader.resetAll();
-    }
-
-    // Réinitialiser les Sprint Goals
-    if (this.sprintGoals) {
-      this.sprintGoals.setGoals([]);
     }
 
     // Mettre à jour le bouton de sauvegarde et le sélecteur de sprint
@@ -560,12 +550,7 @@ export default class AdminPage extends Component {
     // loadSnapshot retourne directement les données, pas l'objet snapshot
     const data = storageService.loadSnapshot(id);
     if (data) {
-      // S'assurer que sprintGoals est toujours défini (réinitialiser si absent)
-      const dataWithGoals = {
-        ...data,
-        sprintGoals: data.sprintGoals || []
-      };
-      store.dispatch(dataWithGoals);
+      store.dispatch(data);
 
       // Mettre à jour l'état local et les champs sans re-rendu
       if (data.manualInput) {
@@ -600,10 +585,7 @@ export default class AdminPage extends Component {
         this._updateSaveButton();
       }
 
-      // Mettre à jour le composant SprintGoals directement
-      if (this.sprintGoals) {
-        this.sprintGoals.setGoals(dataWithGoals.sprintGoals);
-      }
+
 
       // Récupérer le nom du snapshot pour la notification
       const snapshots = storageService.listSnapshots();
@@ -663,70 +645,79 @@ export default class AdminPage extends Component {
 
     return `
       <div class="admin-page">
-        <div class="admin-page__header">
-          <h2 class="admin-page__title">Préparation de la Sprint Review</h2>
-          <p class="admin-page__subtitle">
-            Chargez vos données et configurez les informations du sprint
-          </p>
+        <!-- Cover -->
+        <div class="cover">
+          <div>
+            <div class="eyebrow" style="margin-bottom:12px">§ 00 — Préparation</div>
+            <h1 class="h-display">Préparation de la <em>review</em></h1>
+            <p class="lede" style="margin-top:18px">Charger les exports Jira, choisir le sprint à présenter, saisir les engagements — tout reste sur cette machine.</p>
+          </div>
         </div>
 
-        <div class="admin-page__grid">
-          <!-- Colonne gauche : CSV Upload -->
-          <section class="admin-section">
-            <div class="admin-section__header">
-              <h3 class="admin-section__title">Fichiers CSV EazyBI</h3>
+        <!-- § 01 — Sources -->
+        <div class="section--editorial" style="border-top:0;padding-top:0;margin-top:0">
+          <div class="section__head">
+            <div class="section__title">
+              <span class="section__num">§ 01 — Sources</span>
+              <h2 class="h-section">Fichiers Jira</h2>
             </div>
-            <div class="admin-section__content">
-              <div data-component="file-uploader"></div>
-            </div>
-          </section>
-
-          <!-- Colonne droite : Infos Sprint + Story Points empilés -->
-          <div class="admin-column">
-            <section class="admin-section admin-section--compact">
-              <div class="admin-section__header">
-                <h3 class="admin-section__title">Informations Sprint</h3>
-              </div>
-              <div class="admin-section__content admin-section__content--compact">
-                ${this._renderSprintInfoForm()}
-              </div>
-            </section>
-
-            <section class="admin-section admin-section--compact">
-              <div class="admin-section__header">
-                <h3 class="admin-section__title">Story Points</h3>
-              </div>
-              <div class="admin-section__content admin-section__content--compact">
-                ${this._renderStoryPointsForm()}
-              </div>
-            </section>
           </div>
+          <div class="admin-page__grid">
+            <section class="admin-section">
+              <div class="admin-section__content">
+                <div data-component="file-uploader"></div>
+              </div>
+            </section>
+            <div class="admin-column">
+              <section class="admin-section admin-section--compact" data-section="sprint-info">
+                <div class="admin-section__header">
+                  <h3 class="admin-section__title">Informations Sprint</h3>
+                </div>
+                <div class="admin-section__content admin-section__content--compact">
+                  ${this._renderSprintInfoForm()}
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
 
-          <!-- Sprint Goals : pleine largeur -->
-          <section class="admin-section admin-section--full">
-            <div class="admin-section__header">
-              <h3 class="admin-section__title">Sprint Goals</h3>
+        <!-- § 02 — Engagements -->
+        <div class="section--editorial">
+          <div class="section__head">
+            <div class="section__title">
+              <span class="section__num">§ 02 — Engagements</span>
+              <h2 class="h-section">Story points par sprint</h2>
             </div>
-            <div class="admin-section__content">
-              <div data-component="sprint-goals"></div>
+            <span class="dek section__deck">Saisir les engagements et livrés sur six sprints — sert au calcul de vélocité recommandée.</span>
+          </div>
+          <div class="admin-section" data-section="story-points">
+            <div class="admin-section__content admin-section__content--compact">
+              ${this._renderStoryPointsForm()}
             </div>
-          </section>
+          </div>
+        </div>
 
-          <!-- Snapshots -->
-          <section class="admin-section admin-section--full" data-section="snapshots">
-            <div class="admin-section__header">
-              <h3 class="admin-section__title">Snapshots</h3>
-              <button class="btn btn--primary btn--small"
-                      data-action="save-snapshot"
-                      ${!csvLoaded && !hasStoryPoints ? 'disabled' : ''}>
-                Sauvegarder
-              </button>
+        <!-- § 03 — Archives -->
+        <div class="section--editorial">
+          <div class="section__head">
+            <div class="section__title">
+              <span class="section__num">§ 03 — Archives</span>
+              <h2 class="h-section">Snapshots sauvegardés</h2>
             </div>
+            <button class="btn--editorial btn--editorial-small"
+                    data-action="save-snapshot"
+                    ${!csvLoaded && !hasStoryPoints ? 'disabled' : ''}>
+              Sauvegarder <span class="arr">→</span>
+            </button>
+          </div>
+          <div class="admin-section" data-section="snapshots">
             <div class="admin-section__content">
               ${this._renderSnapshots()}
             </div>
-          </section>
+          </div>
         </div>
+
+        <div class="fineprint">Tout reste local · Aucun serveur · Conforme RGPD</div>
 
         ${isLoading ? '<div class="admin-page__loader"><div class="loader"></div></div>' : ''}
       </div>

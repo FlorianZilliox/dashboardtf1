@@ -81,6 +81,14 @@ DI-456,Story,...   (ticket assigné à "IAML")
 
 **Attribution :** Chaque ticket hérite de l'équipe de la dernière ligne d'équipe rencontrée.
 
+### 1.7 Clés Jira : un ticket = une clé
+
+Une clé Jira est unique : **deux lignes portant la même clé = un seul ticket**. Les deux parsers (Sprint Review et Time in Status) gardent la **première** ligne rencontrée pour chaque clé et ignorent les suivantes. Au chargement, un avertissement indique combien de tickets étaient présents sur plusieurs lignes.
+
+Format de clé reconnu : `[A-Z][A-Z0-9_]*-\d+` (ex. `AUT-123`, `DSD-45`).
+
+**Sous-tâches dans Time in Status :** la première colonne est le libellé eazyBI du ticket, `KEY titre`. Pour une sous-tâche, eazyBI écrit `PARENT / SOUS-TÂCHE titre` (ex. `DI-368 / DI-536 [Migration RBAC] …`). La clé du ticket est la **dernière** clé de la chaîne (`DI-536`), pas la première (le parent). Lire la première attribuait les temps de la sous-tâche au parent.
+
 ---
 
 ## 2. Règles métier
@@ -124,6 +132,8 @@ const isSingleSprint = ticket.sprints && ticket.sprints.length === 1;
 const isCreatedAfterStart = createdDate && createdDate > sprintStart;
 const isMidSprintAddition = isSingleSprint && isCreatedAfterStart;
 ```
+
+**Dans la page Review** : survoler la carte « Ajouts mid-sprint » (ou la focaliser au clavier / la toucher sur écran tactile) ouvre un panneau listant les ID Jira de ces tickets, triés par clé, avec type, story points, statut terminé et titre. Le panneau s'ouvre en dessous ou au-dessus selon la place disponible, défile si la liste est longue, et se ferme en quittant la carte ou avec Échap. Code : `ReviewPage._renderMidSprintPopover()` et styles `.kpi-popover` dans `css/pages/review.css`.
 
 ### 2.5 Convention des dates de sprint
 

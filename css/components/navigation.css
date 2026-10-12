@@ -1,79 +1,129 @@
 /**
  * ==========================================================================
- * NAVIGATION.CSS - Navigation principale (intégrée au header)
+ * NAVIGATION.CSS - Masthead horizontal + tabs
  * ==========================================================================
  */
 
 /* ========================================================================
- * 1. CONTAINER PRINCIPAL
+ * 1. MASTHEAD
  * ======================================================================== */
 
-.navigation {
+.masthead {
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.masthead__top {
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 14px 36px 10px;
+  border-bottom: 1px solid var(--line-hair);
+  gap: 24px;
+}
+
+.masthead__brand-mark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  font-style: italic;
+  font-variation-settings: "opsz" 144, "SOFT" 30;
+  color: var(--ink);
+}
+
+.masthead__edition {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.masthead__edition strong {
+  font-weight: 600;
+  font-style: normal;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.masthead__nav {
+  display: flex;
+  padding: 0 36px;
 }
 
 /* ========================================================================
  * 2. TABS
  * ======================================================================== */
 
-.navigation__tabs {
+.navigation {
   display: flex;
-  gap: var(--spacing-1);
-  background-color: var(--color-bg-secondary);
-  padding: var(--spacing-1);
-  border-radius: var(--radius-lg);
+  width: 100%;
 }
 
-.navigation__tab {
+.tab {
+  background: none;
+  border: 0;
+  padding: 12px 20px 14px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: var(--spacing-2) var(--spacing-4);
-  background: none;
-  border: none;
-  border-radius: var(--radius-md);
+  gap: 8px;
   cursor: pointer;
-  transition: var(--transition-all);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  white-space: nowrap;
+  transition: color 120ms;
 }
 
-.navigation__tab:hover {
-  background-color: var(--color-bg-hover);
-  color: var(--color-text-primary);
+.tab__num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-mute);
+  font-weight: 500;
 }
 
-.navigation__tab--active {
-  background-color: var(--color-accent-blue);
-  color: var(--color-text-inverse);
+.tab:hover {
+  color: var(--ink);
 }
 
-.navigation__tab--active:hover {
-  background-color: var(--color-accent-blue-dark);
-  color: var(--color-text-inverse);
+.tab[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+.tab[aria-selected="true"] .tab__num {
+  color: var(--sage);
+}
+
+.tab--right {
+  margin-left: auto;
 }
 
 /* ========================================================================
  * 3. SECRET TAB (StarAc)
  * ======================================================================== */
 
-.navigation__tab--secret {
+.tab--secret {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  border-radius: var(--r-md) var(--r-md) 0 0;
   animation: secretReveal 0.5s ease-out;
 }
 
-.navigation__tab--secret:hover {
+.tab--secret:hover {
   background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
   color: white;
 }
 
-.navigation__tab--secret.navigation__tab--active {
+.tab--secret[aria-selected="true"] {
   background: linear-gradient(135deg, #4c51bf 0%, #553c9a 100%);
-  box-shadow: 0 0 12px rgba(102, 126, 234, 0.5);
+  border-bottom-color: #764ba2;
 }
 
 @keyframes secretReveal {
@@ -82,7 +132,7 @@
     transform: scale(0.8);
   }
   50% {
-    transform: scale(1.1);
+    transform: scale(1.05);
   }
   100% {
     opacity: 1;
@@ -94,9 +144,24 @@
  * 4. RESPONSIVE
  * ======================================================================== */
 
-@media (max-width: 576px) {
-  .navigation__tab {
-    padding: var(--spacing-2) var(--spacing-3);
-    font-size: var(--font-size-xs);
+@media (max-width: 768px) {
+  .masthead__top {
+    padding: 10px 16px 8px;
+  }
+
+  .masthead__brand-mark {
+    font-size: 20px;
+  }
+
+  .masthead__nav {
+    padding: 0 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab {
+    padding: 10px 14px 12px;
+    font-size: 12px;
+    white-space: nowrap;
   }
 }

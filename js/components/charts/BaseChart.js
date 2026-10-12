@@ -110,25 +110,35 @@ export default class BaseChart extends Component {
         grid: {
           display: false
         },
-        ticks: {
-          color: config.colors.gray[500],
-          font: {
-            family: config.chartDefaults.fontFamily,
-            size: 11
-          }
-        }
-      },
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: config.colors.gray[200]
+        border: {
+          display: false
         },
         ticks: {
           color: config.colors.gray[500],
           font: {
-            family: config.chartDefaults.fontFamily,
-            size: 11
-          }
+            family: "'Inter', sans-serif",
+            size: 10,
+            weight: '500'
+          },
+          padding: 8
+        }
+      },
+      y: {
+        beginAtZero: true,
+        border: {
+          display: false
+        },
+        grid: {
+          color: 'rgba(217, 228, 234, 0.5)',
+          lineWidth: 1
+        },
+        ticks: {
+          color: config.colors.gray[400],
+          font: {
+            family: "'Inter', sans-serif",
+            size: 10
+          },
+          padding: 8
         }
       }
     };

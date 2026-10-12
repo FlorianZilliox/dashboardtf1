@@ -18,7 +18,6 @@
 
 import Component from '../components/Component.js';
 import MetricCard from '../components/MetricCard.js';
-import SprintGoals from '../components/SprintGoals.js';
 import { BarChart, TrendChart, DoughnutChart } from '../components/charts/index.js';
 import store from '../core/store.js';
 import eventBus from '../core/eventBus.js';
@@ -26,6 +25,7 @@ import config from '../core/config.js';
 import metricsCalculator from '../services/metricsCalculator.js';
 import pdfExporter from '../services/pdfExporter.js';
 import { formatNumber, formatPercent, formatDays } from '../utils/formatters.js';
+import { sanitize } from '../utils/validators.js';
 
 // =========================================================================
 // CLASSE REVIEWPAGE
@@ -49,7 +49,6 @@ export default class ReviewPage extends Component {
     this.state = {
       sprintMetrics: currentState.sprintMetrics || null,
       manualInput: currentState.manualInput || null,
-      sprintGoals: currentState.sprintGoals || [],
       isExporting: false,
       throughputMetric: 'tickets', // 'tickets' ou 'storyPoints'
       showPearson: false, // Carte corrélation cachée par défaut
@@ -76,12 +75,11 @@ export default class ReviewPage extends Component {
 
     // S'abonner aux changements du store
     this.subscribe(
-      state => ({ metrics: state.sprintMetrics, manual: state.manualInput, goals: state.sprintGoals }),
-      ({ metrics, manual, goals }) => {
+      state => ({ metrics: state.sprintMetrics, manual: state.manualInput }),
+      ({ metrics, manual }) => {
         this.setState({
           sprintMetrics: metrics,
-          manualInput: manual,
-          sprintGoals: goals || []
+          manualInput: manual
         });
       }
     );
@@ -97,21 +95,17 @@ export default class ReviewPage extends Component {
     const currentState = store.getState();
     const storeMetrics = currentState.sprintMetrics || null;
     const storeManual = currentState.manualInput || null;
-    const storeGoals = currentState.sprintGoals || [];
-
     console.log('[ReviewPage] afterMount - state.sprintMetrics:', !!this.state.sprintMetrics);
     console.log('[ReviewPage] afterMount - store.sprintMetrics:', !!storeMetrics);
 
     const needsRerender =
       this.state.sprintMetrics !== storeMetrics ||
-      this.state.manualInput !== storeManual ||
-      this.state.sprintGoals !== storeGoals;
+      this.state.manualInput !== storeManual;
 
     if (needsRerender) {
       console.log('[ReviewPage] afterMount - needsRerender=true, mise à jour du state');
       this.state.sprintMetrics = storeMetrics;
       this.state.manualInput = storeManual;
-      this.state.sprintGoals = storeGoals;
       this.forceUpdate();
       console.log('[ReviewPage] afterMount - forceUpdate() terminé');
     }
@@ -156,18 +150,6 @@ export default class ReviewPage extends Component {
     const storeState = store.getState();
     const sprintMetrics = storeState.sprintMetrics || this.state.sprintMetrics;
     const manualInput = storeState.manualInput || this.state.manualInput;
-    const sprintGoals = storeState.sprintGoals || this.state.sprintGoals;
-
-    // Sprint Goals (mode lecture seule)
-    const goalsContainer = this.$('[data-component="sprint-goals"]');
-    if (goalsContainer && !this.components.sprintGoals) {
-      this.components.sprintGoals = new SprintGoals(goalsContainer, {
-        editable: false,
-        goals: sprintGoals,
-        showStats: true
-      });
-      this.components.sprintGoals.mount();
-    }
 
     // Graphiques (si données CSV disponibles)
     if (sprintMetrics) {
@@ -181,539 +163,208 @@ export default class ReviewPage extends Component {
    * @private
    */
   _initializeCharts(metrics) {
+    // Helper : lire les CSS vars pour les couleurs
+    const cs = getComputedStyle(document.documentElement);
+    const v = (name) => cs.getPropertyValue(name).trim();
+    const p = {
+      ink: v('--ink'), ink3: v('--ink-3'), inkMute: v('--ink-mute'),
+      sage: v('--sage'), sageSoft: v('--sage-soft'),
+      amber: v('--amber'), amberSoft: v('--amber-soft'),
+      rust: v('--rust'), rustSoft: v('--rust-soft'),
+      plum: v('--plum'), plumSoft: v('--plum-soft'),
+      sky: v('--sky'), skySoft: v('--sky-soft'),
+      line: v('--line-hair'), paper: v('--paper')
+    };
 
-    // Throughput - création directe du graphique Chart.js
-    const throughputCanvas = document.getElementById('throughput-chart');
-    if (throughputCanvas && metrics.throughput && metrics.throughput.values?.length) {
-      console.log('[ReviewPage] Création du graphique Throughput');
-
-      // Détruire l'ancien graphique s'il existe
-      if (this.components.throughputChart) {
-        this.components.throughputChart.destroy();
+    // Options communes (style editorial)
+    const commonOpts = () => ({
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: p.ink, titleColor: p.paper, bodyColor: p.paper,
+          titleFont: { family: 'JetBrains Mono', size: 10 },
+          bodyFont: { family: 'Inter', size: 12 },
+          padding: 8, cornerRadius: 4, borderWidth: 0
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, border: { color: p.ink3 }, ticks: { color: p.ink3, font: { family: 'JetBrains Mono', size: 10 } } },
+        y: { grid: { color: p.line, drawBorder: false }, border: { display: false }, ticks: { color: p.ink3, font: { family: 'JetBrains Mono', size: 10 } } }
       }
+    });
 
-      // Choisir les données selon la métrique sélectionnée
+    // === THROUGHPUT ===
+    const throughputCanvas = document.getElementById('throughput-chart');
+    if (throughputCanvas && metrics.throughput?.values?.length) {
+      if (this.components.throughputChart) this.components.throughputChart.destroy();
+
       const isStoryPoints = this.state.throughputMetric === 'storyPoints';
-      const chartData = isStoryPoints
-        ? (metrics.throughput.storyPointsValues || [])
-        : metrics.throughput.values;
-      const chartLabel = isStoryPoints ? 'Story Points livrés' : 'Tickets fermés';
-      const yAxisLabel = isStoryPoints ? 'Story Points' : 'Tickets';
+      const chartData = isStoryPoints ? (metrics.throughput.storyPointsValues || []) : metrics.throughput.values;
 
-      // Calculer les benchmarks pour les données sélectionnées
-      const benchmarkAvg = Math.round((chartData.reduce((a, b) => a + b, 0) / chartData.length) * 10) / 10;
-      const sortedData = [...chartData].sort((a, b) => a - b);
-      const mid = Math.floor(sortedData.length / 2);
-      const benchmarkMedian = sortedData.length % 2 === 0
-        ? (sortedData[mid - 1] + sortedData[mid]) / 2
-        : sortedData[mid];
-
-      const ctx = throughputCanvas.getContext('2d');
-      const defaultBgColor = 'rgba(37, 99, 235, 0.8)';
-      this.components.throughputChart = new Chart(ctx, {
+      this.components.throughputChart = new Chart(throughputCanvas, {
         type: 'bar',
         data: {
           labels: metrics.throughput.weeks,
           datasets: [{
-            label: chartLabel,
             data: chartData,
-            backgroundColor: chartData.map(() => defaultBgColor),
-            borderColor: 'rgba(37, 99, 235, 1)',
-            borderWidth: 1
+            backgroundColor: chartData.map((_, i) => i === chartData.length - 1 ? p.sage : p.sageSoft),
+            borderRadius: 2, borderSkipped: false, barPercentage: 0.7
           }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: yAxisLabel }
-            }
-          },
-          plugins: {
-            legend: { display: false },
-            annotation: {
-              annotations: {
-                avgLine: {
-                  type: 'line',
-                  yMin: benchmarkAvg,
-                  yMax: benchmarkAvg,
-                  borderColor: 'rgba(239, 68, 68, 0.8)',
-                  borderWidth: 2,
-                  borderDash: [5, 5],
-                  label: {
-                    display: true,
-                    content: `Moy: ${benchmarkAvg}`,
-                    position: 'start',
-                    backgroundColor: 'rgba(239, 68, 68, 0.8)'
-                  }
-                },
-                medianLine: {
-                  type: 'line',
-                  yMin: benchmarkMedian,
-                  yMax: benchmarkMedian,
-                  borderColor: 'rgba(139, 92, 246, 0.8)',
-                  borderWidth: 2,
-                  borderDash: [5, 5],
-                  label: {
-                    display: true,
-                    content: `Méd: ${benchmarkMedian}`,
-                    position: 'end',
-                    backgroundColor: 'rgba(139, 92, 246, 0.8)'
-                  }
-                }
-              }
-            }
-          },
+          ...commonOpts(),
           onClick: (event, elements) => {
-            if (elements.length > 0) {
-              const index = elements[0].index;
-              this._handleToggleSprintExclusion('throughput', index);
-            }
+            if (elements.length > 0) this._handleToggleSprintExclusion('throughput', elements[0].index);
           }
         }
       });
-      console.log('[ReviewPage] Graphique Throughput créé avec benchmarks');
     }
 
-    // Cycle Time - création directe du graphique Chart.js
+    // === CYCLE TIME ===
     const cycleTimeCanvas = document.getElementById('cycletime-chart');
-    if (cycleTimeCanvas && metrics.cycleTime && metrics.cycleTime.values?.length) {
-      if (this.components.cycleTimeChart) {
-        this.components.cycleTimeChart.destroy();
-      }
+    if (cycleTimeCanvas && metrics.cycleTime?.values?.length) {
+      if (this.components.cycleTimeChart) this.components.cycleTimeChart.destroy();
 
-      const ctx = cycleTimeCanvas.getContext('2d');
-      const defaultCtBgColor = 'rgba(20, 184, 166, 0.8)';
-      this.components.cycleTimeChart = new Chart(ctx, {
+      this.components.cycleTimeChart = new Chart(cycleTimeCanvas, {
         type: 'bar',
         data: {
           labels: metrics.cycleTime.weeks,
           datasets: [{
-            label: 'Cycle Time (jours)',
             data: metrics.cycleTime.values,
-            backgroundColor: metrics.cycleTime.values.map(() => defaultCtBgColor),
-            borderColor: 'rgba(20, 184, 166, 1)',
-            borderWidth: 1
+            backgroundColor: metrics.cycleTime.values.map((_, i) => i === metrics.cycleTime.values.length - 1 ? p.amber : p.amberSoft),
+            borderRadius: 2, borderSkipped: false, barPercentage: 0.7
           }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: 'Jours' }
-            }
-          },
-          plugins: {
-            legend: { display: false },
-            annotation: {
-              annotations: {
-                avgLine: {
-                  type: 'line',
-                  yMin: metrics.cycleTime.benchmarkAvg,
-                  yMax: metrics.cycleTime.benchmarkAvg,
-                  borderColor: 'rgba(239, 68, 68, 0.8)',
-                  borderWidth: 2,
-                  borderDash: [5, 5],
-                  label: {
-                    display: true,
-                    content: `Moy. globale: ${metrics.cycleTime.benchmarkAvg}j`,
-                    position: 'start',
-                    backgroundColor: 'rgba(239, 68, 68, 0.8)'
-                  }
-                },
-                medianLine: {
-                  type: 'line',
-                  yMin: metrics.cycleTime.benchmarkMedian,
-                  yMax: metrics.cycleTime.benchmarkMedian,
-                  borderColor: 'rgba(139, 92, 246, 0.8)',
-                  borderWidth: 2,
-                  borderDash: [5, 5],
-                  label: {
-                    display: true,
-                    content: `Méd. globale: ${metrics.cycleTime.benchmarkMedian}j`,
-                    position: 'end',
-                    backgroundColor: 'rgba(139, 92, 246, 0.8)'
-                  }
-                }
-              }
-            }
-          },
+          ...commonOpts(),
           onClick: (event, elements) => {
-            if (elements.length > 0) {
-              const index = elements[0].index;
-              this._handleToggleSprintExclusion('cycleTime', index);
-            }
+            if (elements.length > 0) this._handleToggleSprintExclusion('cycleTime', elements[0].index);
           }
         }
       });
     }
 
-    // Time in Status - deux camemberts (dernier sprint + 6 sprints)
+    // === TIME IN STATUS (2 doughnuts) ===
     const tisSprintCanvas = document.getElementById('timeinstatus-chart-sprint');
     const tisPeriodCanvas = document.getElementById('timeinstatus-chart-period');
 
-    if (metrics.timeInStatus && metrics.timeInStatus.labels?.length) {
+    if (metrics.timeInStatus?.labels?.length) {
       const tis = metrics.timeInStatus;
-
-      // Couleurs pour chaque statut
-      const colors = [
-        'rgba(99, 102, 241, 0.8)',   // Indigo
-        'rgba(139, 92, 246, 0.8)',   // Violet
-        'rgba(236, 72, 153, 0.8)',   // Pink
-        'rgba(248, 113, 113, 0.8)', // Red
-        'rgba(251, 146, 60, 0.8)',  // Orange
-        'rgba(250, 204, 21, 0.8)',  // Yellow
-        'rgba(74, 222, 128, 0.8)',  // Green
-        'rgba(45, 212, 191, 0.8)',  // Teal
-        'rgba(56, 189, 248, 0.8)'   // Sky
-      ];
-
-      const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
+      const donutPalette = [p.sage, p.amber, p.rust, p.plum, p.sky, p.sageSoft, p.amberSoft, p.rustSoft, p.plumSoft];
+      const donutOpts = {
+        responsive: true, maintainAspectRatio: false, cutout: '62%',
         plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            callbacks: {
-              label: (context) => {
-                const label = context.label || '';
-                const value = context.raw || 0;
-                return `${label}: ${value.toFixed(1)}%`;
-              }
-            }
-          }
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => `${c.label}: ${c.raw}%` } }
         }
       };
 
-      // Chart dernier sprint (pct2w)
       if (tisSprintCanvas) {
-        if (this.components.tisChartSprint) {
-          this.components.tisChartSprint.destroy();
-        }
-        const ctx = tisSprintCanvas.getContext('2d');
-        this.components.tisChartSprint = new Chart(ctx, {
+        if (this.components.tisChartSprint) this.components.tisChartSprint.destroy();
+        this.components.tisChartSprint = new Chart(tisSprintCanvas, {
           type: 'doughnut',
-          data: {
-            labels: tis.labels,
-            datasets: [{
-              data: tis.pct2w,
-              backgroundColor: colors.slice(0, tis.labels.length),
-              borderColor: '#ffffff',
-              borderWidth: 2
-            }]
-          },
-          options: chartOptions
+          data: { labels: tis.labels, datasets: [{ data: tis.pct2w, backgroundColor: donutPalette.slice(0, tis.labels.length), borderColor: p.paper, borderWidth: 2 }] },
+          options: donutOpts
         });
       }
 
-      // Chart 6 derniers sprints (pct12w)
       if (tisPeriodCanvas) {
-        if (this.components.tisChartPeriod) {
-          this.components.tisChartPeriod.destroy();
-        }
-        const ctx = tisPeriodCanvas.getContext('2d');
-        this.components.tisChartPeriod = new Chart(ctx, {
+        if (this.components.tisChartPeriod) this.components.tisChartPeriod.destroy();
+        this.components.tisChartPeriod = new Chart(tisPeriodCanvas, {
           type: 'doughnut',
-          data: {
-            labels: tis.labels,
-            datasets: [{
-              data: tis.pct12w,
-              backgroundColor: colors.slice(0, tis.labels.length),
-              borderColor: '#ffffff',
-              borderWidth: 2
-            }]
-          },
-          options: chartOptions
+          data: { labels: tis.labels, datasets: [{ data: tis.pct12w, backgroundColor: donutPalette.slice(0, tis.labels.length), borderColor: p.paper, borderWidth: 2 }] },
+          options: donutOpts
         });
       }
 
-      // Légende horizontale en bas
+      // Legende editorial
       const legendContainer = document.getElementById('timeinstatus-legend');
       if (legendContainer) {
-        legendContainer.innerHTML = tis.labels.map((label, idx) => `
-          <div class="chart-legend__item">
-            <span class="chart-legend__color" style="background-color: ${colors[idx]}"></span>
-            <span class="chart-legend__label">${label}</span>
-          </div>
-        `).join('');
+        legendContainer.innerHTML = tis.labels.map((label, idx) =>
+          `<span class="legend__item"><span class="legend__sw" style="background:${donutPalette[idx]}"></span>${label} — ${tis.pct2w[idx]}%</span>`
+        ).join('');
       }
     }
 
-    // Bugs Chart - bar chart avec Chart.js directement
+    // === BUGS ===
     const bugsCanvas = document.getElementById('bugs-chart');
-    if (bugsCanvas && metrics.bugs && metrics.bugs.created?.length && metrics.bugs.closed?.length) {
-      if (this.components.bugsChart) {
-        this.components.bugsChart.destroy();
-      }
+    if (bugsCanvas && metrics.bugs?.created?.length && metrics.bugs?.closed?.length) {
+      if (this.components.bugsChart) this.components.bugsChart.destroy();
 
-      const ctx = bugsCanvas.getContext('2d');
-      this.components.bugsChart = new Chart(ctx, {
+      this.components.bugsChart = new Chart(bugsCanvas, {
         type: 'bar',
         data: {
           labels: metrics.bugs.weeks,
           datasets: [
-            {
-              label: 'Créés',
-              data: metrics.bugs.created,
-              backgroundColor: 'rgba(236, 72, 153, 0.8)',  // Pink (comme "À déployer en prod")
-              borderColor: 'rgba(236, 72, 153, 1)',
-              borderWidth: 1
-            },
-            {
-              label: 'Résolus',
-              data: metrics.bugs.closed,
-              backgroundColor: 'rgba(99, 102, 241, 0.8)',  // Indigo (comme "En cours")
-              borderColor: 'rgba(99, 102, 241, 1)',
-              borderWidth: 1
-            }
+            { data: metrics.bugs.created, backgroundColor: p.rust, borderRadius: 2, borderSkipped: false, barPercentage: 0.85 },
+            { data: metrics.bugs.closed, backgroundColor: p.sage, borderRadius: 2, borderSkipped: false, barPercentage: 0.85 }
           ]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { stepSize: 1 }
-            }
-          },
-          plugins: {
-            legend: { display: true, position: 'top' },
-            tooltip: {
-              callbacks: {
-                label: (context) => {
-                  const val = context.raw;
-                  const unit = val <= 1 ? 'bug' : 'bugs';
-                  return `${context.dataset.label}: ${val} ${unit}`;
-                }
-              }
-            }
-          }
-        }
+        options: commonOpts()
       });
-      console.log('[ReviewPage] Bugs chart créé avec:', metrics.bugs.weeks, metrics.bugs.created, metrics.bugs.closed);
     }
 
-    // WIP Chart - line chart
+    // === WIP ===
     const wipCanvas = document.getElementById('wip-chart');
-    if (wipCanvas && metrics.wip && metrics.wip.values?.length) {
-      if (this.components.wipChart) {
-        this.components.wipChart.destroy();
-      }
+    if (wipCanvas && metrics.wip?.values?.length) {
+      if (this.components.wipChart) this.components.wipChart.destroy();
 
-      const ctx = wipCanvas.getContext('2d');
-      const avgWip = metrics.wip.avgWip;
-      const medianWip = metrics.wip.medianWip;
-
-      this.components.wipChart = new Chart(ctx, {
+      this.components.wipChart = new Chart(wipCanvas, {
         type: 'line',
         data: {
           labels: metrics.wip.sprints,
-          datasets: [
-            {
-              label: 'WIP moyen / personne',
-              data: metrics.wip.values,
-              borderColor: '#8B5CF6',
-              backgroundColor: 'rgba(139, 92, 246, 0.1)',
-              borderWidth: 3,
-              tension: 0.4,
-              fill: true,
-              pointRadius: 6,
-              pointHoverRadius: 8,
-              pointBackgroundColor: '#8B5CF6'
-            },
-            {
-              label: 'Médiane',
-              data: metrics.wip.sprints.map(() => medianWip),
-              borderColor: '#F59E0B',
-              borderWidth: 2,
-              borderDash: [8, 4],
-              pointRadius: 0,
-              fill: false
-            },
-            {
-              label: 'Moyenne',
-              data: metrics.wip.sprints.map(() => avgWip),
-              borderColor: '#94A3B8',
-              borderWidth: 2,
-              borderDash: [5, 5],
-              pointRadius: 0,
-              fill: false
-            }
-          ]
+          datasets: [{
+            data: metrics.wip.values,
+            borderColor: p.plum,
+            backgroundColor: p.plumSoft + '80',
+            borderWidth: 2, tension: 0.35, fill: true,
+            pointRadius: 3, pointBackgroundColor: p.plum, pointBorderColor: p.paper, pointBorderWidth: 1.5
+          }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: true,
-              position: 'top'
-            },
-            tooltip: {
-              callbacks: {
-                label: (context) => {
-                  const value = context.parsed.y;
-                  if (context.datasetIndex === 0) {
-                    return `${value.toFixed(1)} tickets en moyenne par personne`;
-                  } else if (context.datasetIndex === 1) {
-                    return `Médiane: ${value.toFixed(1)} tickets`;
-                  }
-                  return `Moyenne: ${value.toFixed(1)} tickets`;
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Tickets en cours'
-              },
-              ticks: {
-                stepSize: 1
-              }
-            }
-          }
-        }
+        options: commonOpts()
       });
-      console.log('[ReviewPage] WIP chart créé avec:', metrics.wip.sprints, metrics.wip.values);
     }
 
-    // Burndown Chart - line chart avec progression réelle vs idéale
+    // === BURNDOWN (secret) ===
     const burndownCanvas = document.getElementById('burndown-chart');
-    if (burndownCanvas && metrics.burndown && metrics.burndown.actualSP?.length) {
-      if (this.components.burndownChart) {
-        this.components.burndownChart.destroy();
-      }
+    if (burndownCanvas && metrics.burndown?.actualSP?.length) {
+      if (this.components.burndownChart) this.components.burndownChart.destroy();
 
-      const ctx = burndownCanvas.getContext('2d');
       const burndown = metrics.burndown;
-
-      // Identifier les weekends pour les zones ombrées
-      // Regrouper les weekends consécutifs (sam-dim) en une seule zone
       const weekendAnnotations = {};
       if (burndown.days) {
-        let weekendStart = null;
-        let weekendStartIndex = null;
-
+        let weekendStart = null, weekendStartIndex = null;
         burndown.days.forEach((day, index) => {
-          const dayOfWeek = day.getDay(); // 0 = dimanche, 6 = samedi
-          const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-
-          if (isWeekend && weekendStart === null) {
-            // Début d'un weekend
-            weekendStart = burndown.labels[index];
-            weekendStartIndex = index;
-          } else if (!isWeekend && weekendStart !== null) {
-            // Fin du weekend (jour précédent)
-            weekendAnnotations[`weekend_${weekendStartIndex}`] = {
-              type: 'box',
-              xMin: weekendStartIndex - 0.5,
-              xMax: index - 0.5,
-              yMin: 0,
-              yMax: Math.max(...burndown.actualSP, ...burndown.idealSP) * 1.1,
-              backgroundColor: 'rgba(148, 163, 184, 0.12)',
-              borderWidth: 0,
-              drawTime: 'beforeDatasetsDraw'
-            };
-            weekendStart = null;
-            weekendStartIndex = null;
+          const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+          if (isWeekend && weekendStart === null) { weekendStart = burndown.labels[index]; weekendStartIndex = index; }
+          else if (!isWeekend && weekendStart !== null) {
+            weekendAnnotations[`weekend_${weekendStartIndex}`] = { type: 'box', xMin: weekendStartIndex - 0.5, xMax: index - 0.5, yMin: 0, yMax: Math.max(...burndown.actualSP, ...burndown.idealSP) * 1.1, backgroundColor: p.sageSoft + '40', borderWidth: 0, drawTime: 'beforeDatasetsDraw' };
+            weekendStart = null; weekendStartIndex = null;
           }
         });
-
-        // Si le sprint finit un weekend
         if (weekendStart !== null) {
-          weekendAnnotations[`weekend_${weekendStartIndex}`] = {
-            type: 'box',
-            xMin: weekendStartIndex - 0.5,
-            xMax: burndown.days.length - 0.5,
-            yMin: 0,
-            yMax: Math.max(...burndown.actualSP, ...burndown.idealSP) * 1.1,
-            backgroundColor: 'rgba(148, 163, 184, 0.12)',
-            borderWidth: 0,
-            drawTime: 'beforeDatasetsDraw'
-          };
+          weekendAnnotations[`weekend_${weekendStartIndex}`] = { type: 'box', xMin: weekendStartIndex - 0.5, xMax: burndown.days.length - 0.5, yMin: 0, yMax: Math.max(...burndown.actualSP, ...burndown.idealSP) * 1.1, backgroundColor: p.sageSoft + '40', borderWidth: 0, drawTime: 'beforeDatasetsDraw' };
         }
       }
 
-      this.components.burndownChart = new Chart(ctx, {
+      this.components.burndownChart = new Chart(burndownCanvas, {
         type: 'line',
         data: {
           labels: burndown.labels,
           datasets: [
-            {
-              label: 'SP restants',
-              data: burndown.actualSP,
-              borderColor: 'rgba(37, 99, 235, 1)',
-              backgroundColor: 'rgba(37, 99, 235, 0.1)',
-              borderWidth: 3,
-              tension: 0,
-              fill: true,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              pointBackgroundColor: 'rgba(37, 99, 235, 1)'
-            },
-            {
-              label: 'Idéal',
-              data: burndown.idealSP,
-              borderColor: 'rgba(156, 163, 175, 0.8)',
-              borderWidth: 2,
-              borderDash: [5, 5],
-              tension: 0,
-              fill: false,
-              pointRadius: 0
-            }
+            { label: 'SP restants', data: burndown.actualSP, borderColor: p.sage, backgroundColor: p.sageSoft + '40', borderWidth: 2, tension: 0, fill: true, pointRadius: 3, pointBackgroundColor: p.sage },
+            { label: 'Idéal', data: burndown.idealSP, borderColor: p.inkMute, borderWidth: 1.5, borderDash: [5, 5], tension: 0, fill: false, pointRadius: 0 }
           ]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
+          ...commonOpts(),
           plugins: {
-            legend: {
-              display: true,
-              position: 'top'
-            },
-            tooltip: {
-              callbacks: {
-                label: (context) => {
-                  const value = context.parsed.y;
-                  if (context.datasetIndex === 0) {
-                    return `${value} SP restants`;
-                  }
-                  return `Idéal: ${value} SP`;
-                }
-              }
-            },
-            annotation: {
-              annotations: weekendAnnotations
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Story Points'
-              }
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'Jours du sprint'
-              }
-            }
+            ...commonOpts().plugins,
+            annotation: { annotations: weekendAnnotations }
           }
         }
       });
-      console.log('[ReviewPage] Burndown chart créé avec:', burndown.labels.length, 'jours,', Object.keys(weekendAnnotations).length, 'weekends');
     }
   }
 
@@ -756,29 +407,59 @@ export default class ReviewPage extends Component {
    * Rendu du composant
    */
   render() {
-    const { sprintMetrics, manualInput, sprintGoals, isExporting } = this.state;
+    const { sprintMetrics, manualInput, isExporting } = this.state;
 
     // Afficher l'état vide si pas de données CSV chargées
     if (!sprintMetrics) {
       return this._renderEmptyState();
     }
 
+    const storyPointsHtml = this._renderStoryPointsSectionAuto();
+    const teamName = manualInput?.teamName || '';
+    const sprintName = manualInput?.sprintName || '';
+    const sprintNumber = sprintName.match(/\d+/)?.[0] || '';
+
     return `
       <div class="review-page" id="section-review">
         ${this._renderHeader()}
 
-        <div class="review-page__content">
-          <!-- Section Sprint Goals -->
-          <section class="review-section review-section--goals">
-            <div data-component="sprint-goals"></div>
-          </section>
+        <!-- § 01 — Story Points -->
+        ${storyPointsHtml ? `
+          <div class="section--editorial" style="border-top:0;padding-top:0;margin-top:0">
+            <div class="section__head">
+              <div class="section__title">
+                <span class="section__num">§ 01 — Story points</span>
+                <h2 class="h-section">Engagement et livraison</h2>
+              </div>
+            </div>
+            ${storyPointsHtml}
+          </div>
+        ` : ''}
 
-          <!-- Section Story Points (priorité aux données CSV, fallback sur saisie manuelle) -->
-          ${this._renderStoryPointsSectionAuto()}
-
-          <!-- Métriques CSV -->
-          ${sprintMetrics ? this._renderMetricsSection() : ''}
+        <!-- § 02 — Indicateurs -->
+        <div class="section--editorial">
+          <div class="section__head">
+            <div class="section__title">
+              <span class="section__num">§ 02 — Indicateurs</span>
+              <h2 class="h-section">Six chiffres pour résumer le sprint</h2>
+            </div>
+            <span class="dek section__deck">Comparé à la médiane des six derniers sprints.</span>
+          </div>
+          ${this._renderKPISection()}
         </div>
+
+        <!-- § 03 — Tendances -->
+        <div class="section--editorial">
+          <div class="section__head">
+            <div class="section__title">
+              <span class="section__num">§ 03 — Tendances</span>
+              <h2 class="h-section">Six sprints en perspective</h2>
+            </div>
+          </div>
+          ${this._renderChartsSection()}
+        </div>
+
+        <div class="fineprint">Sprint Review · ${teamName} — ${sprintName} · 100 % local · Aucune donnée transmise</div>
 
         ${isExporting ? '<div class="review-page__overlay"><div class="loader"></div><p>Export en cours...</p></div>' : ''}
       </div>
@@ -792,40 +473,38 @@ export default class ReviewPage extends Component {
    */
   _renderHeader() {
     const { manualInput, isExporting, showExportMenu } = this.state;
+    const sprintName = manualInput?.sprintName || 'Sprint';
+    const sprintNumber = sprintName.match(/\d+/)?.[0] || '';
 
     return `
-      <header class="review-page__header">
-        <div class="review-page__header-info">
-          <h2 class="review-page__title">
-            ${manualInput?.teamName || 'Équipe'}
-          </h2>
-          <p class="review-page__team">${manualInput?.sprintName || 'Sprint'}</p>
+      <div class="cover">
+        <div style="display:flex;align-items:flex-end">
+          <h1 class="h-display">${manualInput?.teamName || 'Sprint Review'}</h1>
         </div>
-
-        <div class="review-page__header-actions">
-          <div class="export-dropdown">
-            <button class="btn btn--primary"
-                    data-action="toggle-export-menu"
-                    ${isExporting ? 'disabled' : ''}>
-              ${isExporting ? 'Export...' : 'Exporter ▾'}
-            </button>
-            <div class="export-dropdown__menu ${showExportMenu ? 'export-dropdown__menu--visible' : ''}" data-component="export-menu">
-              <button class="export-dropdown__item" data-action="export-pdf-radial">
-                <span class="export-dropdown__label">PDF Radial</span>
-                <span class="export-dropdown__desc">Design circulaire</span>
+        <div style="text-align:right">
+          <div class="cover__sprintno"><sup>N°</sup>${sprintNumber}</div>
+          <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end">
+            <div class="export-dropdown" style="position:relative">
+              <button class="btn--editorial-ghost btn--editorial-small"
+                      data-action="toggle-export-menu"
+                      ${isExporting ? 'disabled' : ''}>
+                ${isExporting ? 'Export...' : 'Exporter ▾'}
               </button>
-              <button class="export-dropdown__item" data-action="export-pdf-infographic">
-                <span class="export-dropdown__label">PDF Classique</span>
-                <span class="export-dropdown__desc">Grille de KPIs</span>
-              </button>
-              <button class="export-dropdown__item" data-action="export-md">
-                <span class="export-dropdown__label">Markdown</span>
-                <span class="export-dropdown__desc">Pour Confluence</span>
-              </button>
+              <div class="export-dropdown__menu ${showExportMenu ? 'export-dropdown__menu--visible' : ''}" data-component="export-menu">
+                <button class="export-dropdown__item" data-action="export-pdf-radial">
+                  <span class="export-dropdown__label">PDF Radial</span>
+                </button>
+                <button class="export-dropdown__item" data-action="export-pdf-infographic">
+                  <span class="export-dropdown__label">PDF Classique</span>
+                </button>
+                <button class="export-dropdown__item" data-action="export-md">
+                  <span class="export-dropdown__label">Markdown</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </header>
+      </div>
     `;
   }
 
@@ -835,103 +514,123 @@ export default class ReviewPage extends Component {
    * @private
    */
   _renderMetricsSection() {
-    const { sprintMetrics } = this.state;
-    console.log('[ReviewPage] _renderMetricsSection() appelé, sprintMetrics:', !!sprintMetrics);
+    // Legacy - redirige vers les nouvelles méthodes
+    return this._renderKPISection() + this._renderChartsSection();
+  }
 
-    const gridClass = this.state.showPearson ? 'review-metrics__cards--four-cols' : 'review-metrics__cards--three-cols';
+  /**
+   * Rendu de la grille KPI (3×2)
+   * @returns {string}
+   * @private
+   */
+  _renderKPISection() {
+    return `
+      <div class="kpi-grid">
+        ${this._renderKPICards()}
+      </div>
+    `;
+  }
+
+  /**
+   * Rendu de la grille des graphiques (2 col + full-width)
+   * @returns {string}
+   * @private
+   */
+  _renderChartsSection() {
+    const throughputLabel = this.state.throughputMetric === 'storyPoints'
+      ? 'Story Points livrés par sprint — sprint courant en pleine teinte'
+      : 'Tickets fermés par sprint — sprint courant en pleine teinte';
 
     return `
-      <div class="review-metrics">
-        <!-- Cartes KPI -->
-        <div class="review-metrics__cards ${gridClass}">
-          ${this._renderKPICards()}
+      <div class="grid-2">
+        <!-- Throughput -->
+        <div class="grid-cell">
+          <div class="cell__head">
+            <div class="cell__title">
+              <h3 class="h-card">Throughput</h3>
+              <span class="dek" id="trend-label">${throughputLabel}</span>
+            </div>
+            <div class="toggle">
+              <button data-action="set-throughput-metric" data-value="tickets"
+                      aria-pressed="${this.state.throughputMetric === 'tickets'}">Tickets</button>
+              <button data-action="set-throughput-metric" data-value="storyPoints"
+                      aria-pressed="${this.state.throughputMetric === 'storyPoints'}">SP</button>
+            </div>
+          </div>
+          <div class="cell__chart"><canvas id="throughput-chart"></canvas></div>
         </div>
 
-        <!-- Graphiques -->
-        <div class="review-metrics__charts">
-          <!-- Throughput -->
-          <section class="chart-section">
-            <div class="chart-section__header">
-              <div>
-                <h4 class="chart-section__title">Throughput</h4>
-                <p class="chart-section__subtitle">${this.state.throughputMetric === 'storyPoints' ? 'Story Points livrés' : 'Tickets fermés'} par sprint</p>
-              </div>
-              <div class="toggle-group toggle-group--small">
-                <button class="toggle-group__btn ${this.state.throughputMetric === 'tickets' ? 'toggle-group__btn--active' : ''}"
-                        data-action="set-throughput-metric" data-value="tickets">
-                  Tickets
-                </button>
-                <button class="toggle-group__btn ${this.state.throughputMetric === 'storyPoints' ? 'toggle-group__btn--active' : ''}"
-                        data-action="set-throughput-metric" data-value="storyPoints">
-                  SP
-                </button>
-              </div>
+        <!-- Cycle Time -->
+        <div class="grid-cell">
+          <div class="cell__head">
+            <div class="cell__title">
+              <h3 class="h-card">Cycle Time</h3>
+              <span class="dek">Temps moyen, en jours, par sprint</span>
             </div>
-            <div class="chart-section__chart" style="height: 250px;">
-              <canvas id="throughput-chart"></canvas>
-            </div>
-          </section>
-
-          <!-- Cycle Time -->
-          <section class="chart-section">
-            <h4 class="chart-section__title">Cycle Time</h4>
-            <p class="chart-section__subtitle">Temps moyen par sprint (jours)</p>
-            <div class="chart-section__chart" style="height: 250px;">
-              <canvas id="cycletime-chart"></canvas>
-            </div>
-          </section>
-
-          <!-- Time in Status -->
-          <section class="chart-section">
-            <h4 class="chart-section__title">Répartition du Cycle Time</h4>
-            <p class="chart-section__subtitle">Part de chaque étape dans le temps de traitement</p>
-            <div class="chart-section__dual-charts">
-              <div class="chart-section__chart-item">
-                <span class="chart-section__chart-label">Dernier sprint</span>
-                <div style="height: 180px; width: 180px;">
-                  <canvas id="timeinstatus-chart-sprint"></canvas>
-                </div>
-              </div>
-              <div class="chart-section__chart-item">
-                <span class="chart-section__chart-label">6 sprints</span>
-                <div style="height: 180px; width: 180px;">
-                  <canvas id="timeinstatus-chart-period"></canvas>
-                </div>
-              </div>
-            </div>
-            <div class="chart-section__legend" id="timeinstatus-legend"></div>
-          </section>
-
-          <!-- Bugs -->
-          <section class="chart-section">
-            <h4 class="chart-section__title">Bugs par sprint</h4>
-            <p class="chart-section__subtitle">Création vs résolution</p>
-            <div class="chart-section__chart" style="height: 250px;">
-              <canvas id="bugs-chart"></canvas>
-            </div>
-          </section>
-
-          <!-- WIP Individuel -->
-          <section class="chart-section">
-            <h4 class="chart-section__title">WIP Individuel Moyen</h4>
-            <p class="chart-section__subtitle">${this._getWipSubtitle()}</p>
-            <div class="chart-section__chart" style="height: 250px;">
-              <canvas id="wip-chart"></canvas>
-            </div>
-          </section>
-
-          <!-- Burndown Chart (secret: "burn") -->
-          ${this.state.showBurndown ? `
-          <section class="chart-section">
-            <h4 class="chart-section__title">Burndown*</h4>
-            <p class="chart-section__subtitle">${this._getBurndownSubtitle()}</p>
-            <div class="chart-section__chart" style="height: 250px;">
-              <canvas id="burndown-chart"></canvas>
-            </div>
-            <p class="chart-section__footnote">*Approximatif : basé sur les dates de fermeture Jira, pas sur les daily updates</p>
-          </section>
-          ` : ''}
+          </div>
+          <div class="cell__chart"><canvas id="cycletime-chart"></canvas></div>
         </div>
+
+        <!-- Time in Status -->
+        <div class="grid-cell">
+          <div class="cell__head">
+            <div class="cell__title">
+              <h3 class="h-card">Répartition du cycle</h3>
+              <span class="dek">Sprint courant vs 6 sprints</span>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div style="text-align:center">
+              <div class="eyebrow" style="margin-bottom:8px">Sprint</div>
+              <div style="height:160px"><canvas id="timeinstatus-chart-sprint"></canvas></div>
+            </div>
+            <div style="text-align:center">
+              <div class="eyebrow" style="margin-bottom:8px">6 sprints</div>
+              <div style="height:160px"><canvas id="timeinstatus-chart-period"></canvas></div>
+            </div>
+          </div>
+          <div class="legend" id="timeinstatus-legend"></div>
+        </div>
+
+        <!-- Bugs -->
+        <div class="grid-cell">
+          <div class="cell__head">
+            <div class="cell__title">
+              <h3 class="h-card">Bugs — créés vs résolus</h3>
+              <span class="dek">Solde net du stock par sprint</span>
+            </div>
+            <div class="legend" style="margin:0;gap:12px">
+              <span class="legend__item"><span class="legend__sw" style="background:var(--rust)"></span>Créés</span>
+              <span class="legend__item"><span class="legend__sw" style="background:var(--sage)"></span>Résolus</span>
+            </div>
+          </div>
+          <div class="cell__chart"><canvas id="bugs-chart"></canvas></div>
+        </div>
+
+        <!-- WIP (full width) -->
+        <div class="grid-cell grid-cell--span2">
+          <div class="cell__head">
+            <div class="cell__title">
+              <h3 class="h-card">WIP individuel moyen</h3>
+              <span class="dek">${this._getWipSubtitle()}</span>
+            </div>
+          </div>
+          <div class="cell__chart"><canvas id="wip-chart"></canvas></div>
+        </div>
+
+        <!-- Burndown (secret: "burn", full width) -->
+        ${this.state.showBurndown ? `
+        <div class="grid-cell grid-cell--span2">
+          <div class="cell__head">
+            <div class="cell__title">
+              <h3 class="h-card">Burndown*</h3>
+              <span class="dek">${this._getBurndownSubtitle()}</span>
+            </div>
+          </div>
+          <div class="cell__chart"><canvas id="burndown-chart"></canvas></div>
+          <p class="dek" style="font-size:11px;margin-top:8px">*Approximatif : basé sur les dates de fermeture Jira, pas sur les daily updates</p>
+        </div>
+        ` : ''}
       </div>
     `;
   }
@@ -946,28 +645,16 @@ export default class ReviewPage extends Component {
     const cardsRow1 = [];
     const cardsRow2 = [];
 
-    // === LIGNE 1 ===
+    // === LIGNE 1 : Throughput, Cycle Time, Stock Bugs ===
 
     // Throughput du sprint
     if (sprintMetrics?.throughput?.currentValue !== undefined) {
       cardsRow1.push({
-        label: 'Throughput du sprint',
+        label: 'Throughput',
         value: sprintMetrics.throughput.currentValue,
-        unit: 'tickets terminés',
+        benchmark: sprintMetrics.throughput.benchmarkMedian,
         trend: sprintMetrics.throughput.trend,
         trendIsGood: 'up',
-        decimals: 0
-      });
-    }
-
-    // Ajouts mid-sprint (scope changes)
-    if (sprintMetrics?.throughput?.midSprintCount !== undefined) {
-      cardsRow1.push({
-        label: 'Ajouts mid-sprint',
-        value: sprintMetrics.throughput.midSprintCount,
-        totalTickets: sprintMetrics.throughput.totalTickets,
-        midSprintAdditions: sprintMetrics.throughput.midSprintAdditions || [],
-        showMidSprint: true,
         decimals: 0
       });
     }
@@ -983,6 +670,19 @@ export default class ReviewPage extends Component {
         decimals: 1,
         showAvgMedian: true,
         footnote: '*hors bugs'
+      });
+    }
+
+    // Stock Bugs (déplacé de row2 vers row1)
+    if (sprintMetrics?.bugs) {
+      cardsRow1.push({
+        label: 'Stock Bugs',
+        value: sprintMetrics.bugs.stock || 0,
+        unit: 'bugs ouverts',
+        sprintCreated: sprintMetrics.bugs.sprintCreated || 0,
+        sprintClosed: sprintMetrics.bugs.sprintClosed || 0,
+        showBugDetails: true,
+        decimals: 0
       });
     }
 
@@ -1002,19 +702,21 @@ export default class ReviewPage extends Component {
       });
     }
 
-    // === LIGNE 2 (DORA) ===
+    // === LIGNE 2 : Mid-Sprint, MTTR, CFR ===
 
-    // Stock Bugs
-    if (sprintMetrics?.bugs) {
+    // Ajouts mid-sprint (déplacé de row1 vers row2)
+    if (sprintMetrics?.throughput?.midSprintCount !== undefined) {
       cardsRow2.push({
-        label: 'Stock Bugs',
-        value: sprintMetrics.bugs.stock || 0,
-        unit: 'bugs ouverts',
-        sprintCreated: sprintMetrics.bugs.sprintCreated || 0,
-        sprintClosed: sprintMetrics.bugs.sprintClosed || 0,
-        showBugDetails: true,
+        label: 'Ajouts mid-sprint',
+        value: sprintMetrics.throughput.midSprintCount,
+        throughputValue: sprintMetrics.throughput.currentValue,
+        midSprintAdditions: sprintMetrics.throughput.midSprintAdditions || [],
+        showMidSprint: true,
         decimals: 0
       });
+    }
+
+    if (sprintMetrics?.bugs) {
 
       // MTTR (Mean Time To Recovery)
       cardsRow2.push({
@@ -1041,242 +743,228 @@ export default class ReviewPage extends Component {
     const cards = [...cardsRow1, ...cardsRow2];
 
     return cards.map(card => {
-      // Déterminer la couleur du trend selon trendIsGood
-      let trendClass = 'stable';
+      // Determiner la direction du trend
+      const trendArrow = card.trend > 0 ? '↑' : card.trend < 0 ? '↓' : '→';
+      let trendClass = '';
       if (card.trend > 0) {
-        trendClass = card.trendIsGood === 'up' ? 'up' : 'down';
+        trendClass = card.trendIsGood === 'up' ? 'kpi__delta--up' : 'kpi__delta--down';
       } else if (card.trend < 0) {
-        trendClass = card.trendIsGood === 'down' ? 'up' : 'down';
+        trendClass = card.trendIsGood === 'down' ? 'kpi__delta--up' : 'kpi__delta--down';
       }
 
-      // Format spécial pour Cycle Time (Moyenne + Médiane du sprint)
+      // === Throughput ===
+      if (!card.showAvgMedian && !card.showMidSprint && !card.showBugDetails && !card.showMTTR && !card.showCFR && !card.showCorrelation) {
+        return `
+          <div class="kpi kpi--feat">
+            <div class="kpi__label">Throughput</div>
+            <div class="kpi__num"><span class="tnum">${formatNumber(card.value, card.decimals)}</span></div>
+            <div class="kpi__hint">Méd. 6 sprints : ${card.benchmark || '—'}</div>
+            ${card.trend !== null && card.trend !== undefined ? `
+              <div class="kpi__foot"><span class="kpi__delta ${trendClass}">${trendArrow} ${formatPercent(Math.abs(card.trend))}</span><span>vs sprint précédent</span></div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      // === Cycle Time ===
       if (card.showAvgMedian) {
         return `
-          <div class="kpi-card">
-            <div class="kpi-card__label">${card.label}</div>
-            <div class="kpi-card__stats">
-              <div class="kpi-card__stat">
-                <span class="kpi-card__stat-label">Moyenne</span>
-                <span class="kpi-card__stat-value">${formatDays(card.value, card.decimals, true)}</span>
-              </div>
-              <div class="kpi-card__stat">
-                <span class="kpi-card__stat-label">Médiane</span>
-                <span class="kpi-card__stat-value">${formatDays(card.median, card.decimals, true)}</span>
-              </div>
+          <div class="kpi">
+            <div class="kpi__label">Cycle time<sup style="font-size:9px;margin-left:3px">★</sup></div>
+            <div class="kpi__num"><span class="tnum">${formatNumber(card.value, card.decimals)}</span><em>j</em></div>
+            <div class="kpi__sub">
+              <span><b>${formatNumber(card.median, card.decimals)}j</b> médiane</span>
+              <span><b>${formatNumber(card.value, card.decimals)}j</b> moyenne</span>
             </div>
             ${card.trend !== null ? `
-              <div class="kpi-card__trend kpi-card__trend--${trendClass}">
-                ${card.trend > 0 ? '↑' : card.trend < 0 ? '↓' : '→'}
-                ${formatPercent(Math.abs(card.trend))}
-              </div>
+              <div class="kpi__foot"><span class="kpi__delta ${trendClass}">${trendArrow} ${formatPercent(Math.abs(card.trend))}</span><span>★ hors bugs</span></div>
             ` : ''}
-            ${card.footnote ? `<div class="kpi-card__footnote">${card.footnote}</div>` : ''}
           </div>
         `;
       }
 
-      // Format spécial pour Ajouts mid-sprint
+      // === Stock Bugs ===
+      if (card.showBugDetails) {
+        const netBugs = card.sprintCreated - card.sprintClosed;
+        const netArrow = netBugs > 0 ? '↑' : netBugs < 0 ? '↓' : '→';
+        const netClass = netBugs <= 0 ? 'kpi__delta--up' : 'kpi__delta--down';
+        return `
+          <div class="kpi">
+            <div class="kpi__label">Stock de bugs</div>
+            <div class="kpi__num"><span class="tnum">${formatNumber(card.value, card.decimals)}</span></div>
+            <div class="tagrow">
+              <span class="tag" style="color:var(--bad)"><b>+${card.sprintCreated}</b> créés</span>
+              <span class="tag" style="color:var(--ok)"><b>−${card.sprintClosed}</b> résolus</span>
+            </div>
+            <div class="kpi__foot"><span class="kpi__delta ${netClass}">${netArrow} ${Math.abs(netBugs)}</span><span>net cette quinzaine</span></div>
+          </div>
+        `;
+      }
+
+      // === Mid-Sprint ===
       if (card.showMidSprint) {
         const additions = card.midSprintAdditions || [];
+        const byType = {};
+        additions.forEach(t => { byType[t.type] = (byType[t.type] || 0) + 1; });
+        const typeBreakdown = Object.entries(byType).sort((a, b) => b[1] - a[1]);
+        const pct = card.throughputValue ? Math.round(card.value / card.throughputValue * 100) : 0;
         const hasAdditions = additions.length > 0;
 
-        // Ventilation par type de ticket
-        const byType = {};
-        additions.forEach(t => {
-          byType[t.type] = (byType[t.type] || 0) + 1;
-        });
-        const typeBreakdown = Object.entries(byType)
-          .sort((a, b) => b[1] - a[1]) // Trier par count décroissant
-          .map(([type, count]) => ({ type, count }));
-
         return `
-          <div class="kpi-card">
-            <div class="kpi-card__label">${card.label}</div>
-            <div class="kpi-card__value">
-              ${formatNumber(card.value, card.decimals)}
-              <span class="kpi-card__unit">tickets</span>
-            </div>
-            ${hasAdditions ? `
-              <div class="kpi-card__type-breakdown">
-                ${typeBreakdown.map(({ type, count }) => `
-                  <div class="kpi-card__type-item">
-                    <span class="kpi-card__type-count">${count}</span>
-                    <span class="kpi-card__type-label">${type}</span>
-                  </div>
-                `).join('')}
-              </div>
-            ` : `
-              <div class="kpi-card__detail kpi-card__detail--success">Scope préservé</div>
-            `}
+          <div class="kpi${hasAdditions ? ' kpi--has-popover' : ''}"${hasAdditions ? ' tabindex="0" aria-describedby="midsprint-popover"' : ''}>
+            <div class="kpi__label">Ajouts mid‑sprint</div>
+            <div class="kpi__num"><span class="tnum">${formatNumber(card.value, card.decimals)}</span></div>
+            ${typeBreakdown.length > 0 ? `
+              <div class="tagrow">${typeBreakdown.map(([type, count]) =>
+                `<span class="tag"><b>${count}</b> ${type}</span>`
+              ).join('')}</div>
+            ` : `<div class="kpi__hint" style="color:var(--ok)">Scope préservé</div>`}
+            <div class="kpi__foot"><span>Sur ${card.throughputValue || '—'} tickets — soit ${pct} % du scope</span></div>
+            ${hasAdditions ? this._renderMidSprintPopover(additions) : ''}
           </div>
         `;
       }
 
-      // Format spécial pour Stock Bugs (simplifié)
-      if (card.showBugDetails) {
-        return `
-          <div class="kpi-card">
-            <div class="kpi-card__label">${card.label}</div>
-            <div class="kpi-card__value">
-              ${formatNumber(card.value, card.decimals)}
-              <span class="kpi-card__unit">${card.unit}</span>
-            </div>
-            <div class="kpi-card__details">
-              <span class="kpi-card__detail kpi-card__detail--danger">+${card.sprintCreated} créés</span>
-              <span class="kpi-card__detail kpi-card__detail--success">-${card.sprintClosed} résolus</span>
-            </div>
-          </div>
-        `;
-      }
-
-      // Format MTTR (Mean Time To Recovery)
+      // === MTTR ===
       if (card.showMTTR) {
-        const hasMTTR = card.value > 0;
         return `
-          <div class="kpi-card">
-            <div class="kpi-card__label">
-              ${card.label}
-              <button class="help-btn help-btn--inline" data-tooltip="mttr" title="Qu'est-ce que le MTTR ?">?</button>
-              <div class="kpi-card__tooltip" data-tooltip-content="mttr">
-                <strong>Mean Time To Recovery</strong><br>
-                Temps moyen pour résoudre un bug.<br><br>
-                <em>Plus bas = meilleure réactivité</em><br><br>
-                Élite : < 1h | Haute : < 1j | Moyenne : < 1 sem
+          <div class="kpi">
+            <div class="kpi__label">MTTR</div>
+            ${card.value > 0 ? `
+              <div class="kpi__num"><span class="tnum">${formatNumber(card.value, card.decimals)}</span><em>j</em></div>
+              <div class="kpi__sub">
+                <span><b>${formatNumber(card.value, card.decimals)}j</b> moy.</span>
+                <span><b>${formatNumber(card.median, card.decimals)}j</b> médiane</span>
               </div>
-            </div>
-            ${hasMTTR ? `
-              <div class="kpi-card__stats">
-                <div class="kpi-card__stat">
-                  <span class="kpi-card__stat-label">Moyenne</span>
-                  <span class="kpi-card__stat-value">${formatDays(card.value, card.decimals, true)}</span>
-                </div>
-                <div class="kpi-card__stat">
-                  <span class="kpi-card__stat-label">Médiane</span>
-                  <span class="kpi-card__stat-value">${formatDays(card.median, card.decimals, true)}</span>
-                </div>
-              </div>
-              <div class="kpi-card__comparison">
-                <span class="kpi-card__comparison-label">Moy. 6 sprints</span>
-                <span class="kpi-card__comparison-value">${formatDays(card.periodAvg, 1, true)}</span>
-              </div>
+              <div class="kpi__foot"><span>Moy. 6 sprints : ${formatNumber(card.periodAvg, 1)} j</span></div>
             ` : `
-              <div class="kpi-card__empty">Aucun bug résolu</div>
+              <div class="kpi__hint">Aucun bug résolu</div>
             `}
           </div>
         `;
       }
 
-      // Format Change Failure Rate
+      // === Change Failure Rate ===
       if (card.showCFR) {
-        const isGood = card.value < 15;
-        const isMedium = card.value >= 15 && card.value < 30;
-        const statusClass = isGood ? 'success' : (isMedium ? 'warning' : 'danger');
+        const cfrColor = card.value < 15 ? 'var(--ok)' : card.value < 30 ? 'var(--warn)' : 'var(--bad)';
+        const cfrDelta = card.periodAvg ? Math.round(card.value - card.periodAvg) : null;
+        const cfrDeltaArrow = cfrDelta > 0 ? '↑' : cfrDelta < 0 ? '↓' : '→';
+        const cfrDeltaClass = cfrDelta <= 0 ? 'kpi__delta--up' : 'kpi__delta--down';
         return `
-          <div class="kpi-card">
-            <div class="kpi-card__label">
-              ${card.label}
-              <button class="help-btn help-btn--inline" data-tooltip="cfr" title="Qu'est-ce que le CFR ?">?</button>
-              <div class="kpi-card__tooltip" data-tooltip-content="cfr">
-                <strong>Change Failure Rate</strong><br>
-                % de changements causant un bug.<br><br>
-                <span style="color: var(--color-status-success)">< 15% Excellent</span><br>
-                <span style="color: var(--color-status-warning)">15-30% Moyen</span><br>
-                <span style="color: var(--color-status-danger)">> 30% À améliorer</span>
-              </div>
+          <div class="kpi">
+            <div class="kpi__label">Change failure rate</div>
+            <div class="kpi__num" style="color:${cfrColor}"><span class="tnum">${formatNumber(card.value, card.decimals)}</span><em>%</em></div>
+            <div class="kpi__sub">
+              <span><b>${card.bugsClosed}</b> bugs</span>
+              <span><b>${card.itemsDelivered}</b> items livrés</span>
             </div>
-            <div class="kpi-card__value kpi-card__value--${statusClass}">
-              ${formatNumber(card.value, card.decimals)}
-              <span class="kpi-card__unit">%</span>
-            </div>
-            <div class="kpi-card__detail-small">
-              ${card.bugsClosed} bugs / ${card.itemsDelivered} items livrés
-            </div>
-            <div class="kpi-card__comparison">
-              <span class="kpi-card__comparison-label">Moy. 6 sprints</span>
-              <span class="kpi-card__comparison-value">${formatNumber(card.periodAvg, 1)}%</span>
-            </div>
+            <div class="kpi__foot">${cfrDelta !== null ? `<span class="kpi__delta ${cfrDeltaClass}">${cfrDeltaArrow} ${Math.abs(cfrDelta)} pts</span>` : ''}<span>cible &lt; 15 %</span></div>
           </div>
         `;
       }
 
-      // Format Corrélation Pearson (SP/Cycle Time)
+      // === Correlation Pearson (secret) ===
       if (card.showCorrelation) {
-        const hasCurrent = card.current !== null;
-        const hasPrevious = card.previous !== null;
-
-        // Déterminer la couleur selon la force de la corrélation
-        const getCorrelationClass = (r) => {
-          if (r === null) return '';
-          const absR = Math.abs(r);
-          if (absR >= 0.7) return 'success';
-          if (absR >= 0.4) return 'warning';
-          return 'danger';
-        };
-
-        const currentClass = getCorrelationClass(card.current);
         const formatCorr = (r) => r !== null ? r.toFixed(2) : 'N/A';
-
-        // Tendance
-        let trendIcon = '';
-        let trendLabel = '';
-        if (card.trend !== null) {
-          if (card.trend > 0.05) {
-            trendIcon = '↑';
-            trendLabel = 'En amélioration';
-          } else if (card.trend < -0.05) {
-            trendIcon = '↓';
-            trendLabel = 'En baisse';
-          } else {
-            trendIcon = '→';
-            trendLabel = 'Stable';
-          }
-        }
-
+        const corrColor = card.current !== null
+          ? (Math.abs(card.current) >= 0.7 ? 'var(--ok)' : Math.abs(card.current) >= 0.4 ? 'var(--warn)' : 'var(--bad)')
+          : 'var(--ink-3)';
         return `
-          <div class="kpi-card">
-            <div class="kpi-card__label">
-              ${card.label}
-              <button class="help-btn help-btn--inline" data-tooltip="correlation" title="Qu'est-ce que cette corrélation ?">?</button>
-              <div class="kpi-card__tooltip" data-tooltip-content="correlation">
-                <strong>Corrélation Story Points / Cycle Time</strong><br><br>
-                Mesure si le sizing relatif est cohérent avec l'effort réel.<br><br>
-                <span style="color: var(--color-status-success)">0.7 - 1.0 : Forte → sizing fiable pour la prédictibilité</span><br>
-                <span style="color: var(--color-status-warning)">0.4 - 0.7 : Modérée → sizing partiellement utile</span><br>
-                <span style="color: var(--color-status-danger)">0.0 - 0.4 : Faible → sizing peu utile pour planifier</span><br><br>
-                <em>Une corrélation proche de 0 suggère que les story points n'aident pas à la prédictibilité.</em>
-              </div>
-            </div>
-            ${hasCurrent ? `
-              <div class="kpi-card__value kpi-card__value--${currentClass}">
-                ${formatCorr(card.current)}
-                <span class="kpi-card__unit">${card.currentInterpretation?.label || ''}</span>
-              </div>
-              <div class="kpi-card__detail-small">
-                ${card.currentSampleSize} tickets (hors bugs)
-              </div>
+          <div class="kpi">
+            <div class="kpi__label">Corrélation SP/CT</div>
+            ${card.current !== null ? `
+              <div class="kpi__num" style="color:${corrColor}"><span class="tnum">${formatCorr(card.current)}</span></div>
+              <div class="kpi__hint">${card.currentInterpretation?.label || ''} · ${card.currentSampleSize} tickets</div>
             ` : `
-              <div class="kpi-card__empty">Données insuffisantes</div>
+              <div class="kpi__hint">Données insuffisantes</div>
             `}
           </div>
         `;
       }
 
+      // === Fallback ===
       return `
-        <div class="kpi-card">
-          <div class="kpi-card__label">${card.label}</div>
-          <div class="kpi-card__value">
-            ${formatNumber(card.value, card.decimals)}
-            <span class="kpi-card__unit">${card.unit}</span>
-          </div>
-          ${card.trend !== null && card.trend !== undefined ? `
-            <div class="kpi-card__trend kpi-card__trend--${trendClass}">
-              ${card.trend > 0 ? '↑' : card.trend < 0 ? '↓' : '→'}
-              ${card.trendLabel || formatPercent(Math.abs(card.trend))}
-            </div>
-          ` : ''}
+        <div class="kpi">
+          <div class="kpi__label">${card.label}</div>
+          <div class="kpi__num"><span class="tnum">${formatNumber(card.value, card.decimals)}</span></div>
+          <div class="kpi__hint">${card.unit || ''}</div>
         </div>
       `;
     }).join('');
+  }
+
+  /**
+   * Rendu du panneau listant les tickets ajoutés en cours de sprint
+   * (affiché au survol ou au focus de la carte KPI)
+   * @param {Array} additions - Tickets mid-sprint { key, summary, type, storyPoints, isFinished }
+   * @returns {string}
+   * @private
+   */
+  _renderMidSprintPopover(additions) {
+    const sorted = [...additions].sort((a, b) =>
+      String(a.key).localeCompare(String(b.key), undefined, { numeric: true })
+    );
+
+    return `
+      <div class="kpi-popover" id="midsprint-popover" role="tooltip">
+        <div class="kpi-popover__head">
+          <span class="kpi-popover__title">Tickets ajoutés en cours de sprint</span>
+          <span class="kpi-popover__count">${sorted.length}</span>
+        </div>
+        <ul class="kpi-popover__list">
+          ${sorted.map(t => `
+            <li class="kpi-popover__item">
+              <span class="kpi-popover__key">${sanitize(t.key)}</span>
+              <span class="kpi-popover__meta">${sanitize(t.type || '')}${t.storyPoints ? ` · ${t.storyPoints} SP` : ''}${t.isFinished ? ' · <span class="kpi-popover__done">terminé</span>' : ''}</span>
+              ${t.summary ? `<span class="kpi-popover__summary">${sanitize(t.summary)}</span>` : ''}
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  /**
+   * Place le panneau mid-sprint là où il y a de la place (dessous/dessus, gauche/droite)
+   * @param {Event} e
+   * @private
+   */
+  _handlePopoverPlacement(e) {
+    const anchor = e.currentTarget;
+    const popover = anchor.querySelector('.kpi-popover');
+    if (!popover) return;
+
+    popover.classList.remove('kpi-popover--up', 'kpi-popover--end');
+    popover.style.maxHeight = '';
+    const rect = anchor.getBoundingClientRect();
+    const { offsetHeight: height, offsetWidth: width } = popover;
+
+    // Place disponible sous la carte et au-dessus (sous l'en-tête collant)
+    const margin = 16;
+    const inset = 12; // décalage du panneau par rapport au bord de la carte (cf. .kpi-popover)
+    const headerBottom = document.querySelector('.masthead')?.getBoundingClientRect().bottom || 0;
+    const spaceBelow = window.innerHeight - rect.bottom + inset - margin;
+    const spaceAbove = rect.top + inset - Math.max(headerBottom, 0) - margin;
+
+    const openUp = height > spaceBelow && spaceAbove > spaceBelow;
+    popover.classList.toggle('kpi-popover--up', openUp);
+    const room = openUp ? spaceAbove : spaceBelow;
+    if (height > room) {
+      popover.style.maxHeight = `${Math.max(room, 160)}px`;
+    }
+
+    if (rect.left + inset + width > window.innerWidth) {
+      popover.classList.add('kpi-popover--end');
+    }
+  }
+
+  /**
+   * Ferme le panneau mid-sprint avec Échap (retire le focus de la carte)
+   * @param {KeyboardEvent} e
+   * @private
+   */
+  _handlePopoverKeydown(e) {
+    if (e.key === 'Escape') e.currentTarget.blur();
   }
 
   /**
@@ -1327,6 +1015,10 @@ export default class ReviewPage extends Component {
       currentDelivered,
       currentCompletion,
       currentSprintLabel,
+      initialCommitted,
+      initialDelivered,
+      initialCompletion,
+      midSprintSP,
       avgCommitted,
       avgDelivered,
       avgCompletion,
@@ -1341,49 +1033,54 @@ export default class ReviewPage extends Component {
       return 'warning';
     };
 
-    return `
-      <section class="review-section review-section--story-points">
-        <h4 class="review-section__title">Story Points</h4>
-        <div class="sp-layout">
-          <!-- Lignes + Carte vélocité -->
-          <div class="sp-layout__content">
-            <div class="sp-layout__rows">
-              <!-- Header du tableau -->
-              <div class="sp-table__header">
-                <span></span>
-                <span>Engagés</span>
-                <span>Livrés</span>
-                <span>Complétion</span>
-              </div>
-              <div class="sp-table__row sp-table__row--current">
-                <span class="sp-table__label">${currentSprintLabel || 'Sprint actuel'}</span>
-                <span class="sp-table__value">${currentCommitted}</span>
-                <span class="sp-table__value">${currentDelivered}</span>
-                <span class="sp-table__badge sp-table__badge--${getCompletionClass(currentCompletion)}">${currentCompletion}%</span>
-              </div>
-              ${previousSprintsCount > 0 ? `
-                <div class="sp-table__row sp-table__row--avg">
-                  <span class="sp-table__label">Moyenne (${previousSprintsCount} sprints)</span>
-                  <span class="sp-table__value">${formatNumber(avgCommitted, 1)}</span>
-                  <span class="sp-table__value">${formatNumber(avgDelivered, 1)}</span>
-                  <span class="sp-table__badge sp-table__badge--${getCompletionClass(avgCompletion)}">${avgCompletion}%</span>
-                </div>
-              ` : ''}
-            </div>
+    const pillClass = (cls) => cls === 'success' ? 'ok' : cls === 'danger' ? 'bad' : 'warn';
+    const initialClass = getCompletionClass(initialCompletion);
+    const totalClass = getCompletionClass(currentCompletion);
+    const hasMidSprint = midSprintSP > 0;
 
-            <!-- Carte Vélocité Recommandée -->
-            ${previousSprintsCount > 0 ? `
-              <div class="velocity-card velocity-card--hidden" data-component="velocity-card">
-                <div class="velocity-card__label">Vélocité recommandée</div>
-                <div class="velocity-card__value">${recommendedVelocity}</div>
-                <div class="velocity-card__unit">story points</div>
-                <div class="velocity-card__hint">pour le prochain sprint</div>
-                <button class="velocity-card__reveal-btn" data-action="reveal-velocity">Révéler</button>
-              </div>
-            ` : ''}
+    return `
+      <div class="sp" style="border:1px solid var(--line)">
+        <div>
+          <div class="eyebrow">Story points livrés</div>
+          <div class="sp__hero">
+            <span class="v tnum">${currentDelivered}</span>
+            <span class="frac">/ ${currentCommitted} engagés</span>
           </div>
         </div>
-      </section>
+        <div class="sp__bar"><div class="sp__bar-fill" style="width:${currentCompletion}%"></div></div>
+        <div class="sp__completion-cards">
+          <div class="kpi kpi--completion">
+            <div class="kpi__label">Engagement initial</div>
+            <div class="kpi__num"><span class="tnum">${initialCompletion}</span><em>%</em></div>
+            <div class="kpi__hint">${initialDelivered} / ${initialCommitted} sp</div>
+            <div class="kpi__foot">
+              <span class="pill pill--${pillClass(initialClass)}" style="font-size:10px;padding:2px 8px">${hasMidSprint ? 'Hors ' + midSprintSP + ' sp ajoutés' : 'Scope préservé'}</span>
+            </div>
+          </div>
+          <div class="kpi kpi--completion">
+            <div class="kpi__label">Complétion totale</div>
+            <div class="kpi__num"><span class="tnum">${currentCompletion}</span><em>%</em></div>
+            <div class="kpi__hint">${currentDelivered} / ${currentCommitted} sp</div>
+            <div class="kpi__foot">
+              <span class="pill pill--${pillClass(totalClass)}" style="font-size:10px;padding:2px 8px">${currentSprintLabel || 'Sprint actuel'}</span>
+            </div>
+          </div>
+        </div>
+        <div class="sp__rows">
+          ${previousSprintsCount > 0 ? `
+            <div class="sp__row">
+              <span>Moyenne ${previousSprintsCount} sprints précédents</span>
+              <b>${formatNumber(avgDelivered, 1)} sp</b>
+              <span class="dek">${avgCompletion}%</span>
+            </div>
+            <div class="sp__row">
+              <span>Vélocité recommandée</span>
+              <b class="velocity-value" data-component="velocity-card" style="filter:blur(6px);cursor:pointer" data-action="reveal-velocity">${recommendedVelocity} sp</b>
+              <span class="kicker">— suggéré</span>
+            </div>
+          ` : ''}
+        </div>
+      </div>
     `;
   }
 
@@ -1430,48 +1127,35 @@ export default class ReviewPage extends Component {
     const recommendedVelocity = Math.round(avgDelivered);
 
     return `
-      <section class="review-section review-section--story-points">
-        <h4 class="review-section__title">Story Points</h4>
-        <div class="sp-layout">
-          <!-- Lignes + Carte vélocité -->
-          <div class="sp-layout__content">
-            <div class="sp-layout__rows">
-              <!-- Header du tableau -->
-              <div class="sp-table__header">
-                <span></span>
-                <span>Engagés</span>
-                <span>Livrés</span>
-                <span>Complétion</span>
-              </div>
-              <div class="sp-table__row sp-table__row--current">
-                <span class="sp-table__label">Sprint actuel</span>
-                <span class="sp-table__value">${currentCommitted}</span>
-                <span class="sp-table__value">${currentDelivered}</span>
-                <span class="sp-table__badge sp-table__badge--${getCompletionClass(currentCompletion)}">${currentCompletion}%</span>
-              </div>
-              ${previousSprints.length > 0 ? `
-                <div class="sp-table__row sp-table__row--avg">
-                  <span class="sp-table__label">Moyenne (${previousSprints.length} sprints)</span>
-                  <span class="sp-table__value">${formatNumber(avgCommitted, 1)}</span>
-                  <span class="sp-table__value">${formatNumber(avgDelivered, 1)}</span>
-                  <span class="sp-table__badge sp-table__badge--${getCompletionClass(avgCompletion)}">${avgCompletion}%</span>
-                </div>
-              ` : ''}
-            </div>
-
-            <!-- Carte Vélocité Recommandée -->
-            ${previousSprints.length > 0 ? `
-              <div class="velocity-card velocity-card--hidden" data-component="velocity-card">
-                <div class="velocity-card__label">Vélocité recommandée</div>
-                <div class="velocity-card__value">${recommendedVelocity}</div>
-                <div class="velocity-card__unit">story points</div>
-                <div class="velocity-card__hint">pour le prochain sprint</div>
-                <button class="velocity-card__reveal-btn" data-action="reveal-velocity">Révéler</button>
-              </div>
-            ` : ''}
+      <div class="sp" style="border:1px solid var(--line)">
+        <div>
+          <div class="eyebrow">Story points livrés</div>
+          <div class="sp__hero">
+            <span class="v tnum">${currentDelivered}</span>
+            <span class="frac">/ ${currentCommitted} engagés</span>
           </div>
         </div>
-      </section>
+        <div class="sp__bar"><div class="sp__bar-fill" style="width:${currentCompletion}%"></div></div>
+        <div class="sp__rows">
+          <div class="sp__row">
+            <span>Complétion sprint</span>
+            <b>${currentCompletion}%</b>
+            <span class="dek">Sprint actuel</span>
+          </div>
+          ${previousSprints.length > 0 ? `
+            <div class="sp__row">
+              <span>Moyenne ${previousSprints.length} sprints précédents</span>
+              <b>${formatNumber(avgDelivered, 1)} sp</b>
+              <span class="dek">${avgCompletion}%</span>
+            </div>
+            <div class="sp__row">
+              <span>Vélocité recommandée</span>
+              <b class="velocity-value" data-component="velocity-card" style="filter:blur(6px);cursor:pointer" data-action="reveal-velocity">${recommendedVelocity} sp</b>
+              <span class="kicker">— suggéré</span>
+            </div>
+          ` : ''}
+        </div>
+      </div>
     `;
   }
 
@@ -1509,7 +1193,10 @@ export default class ReviewPage extends Component {
       'click [data-action="go-to-admin"]': this._handleGoToAdmin,
       'click [data-action="reveal-velocity"]': this._handleRevealVelocity,
       'click [data-action="set-throughput-metric"]': this._handleSetThroughputMetric,
-      'click [data-tooltip]': this._handleToggleTooltip
+      'click [data-tooltip]': this._handleToggleTooltip,
+      'mouseenter .kpi--has-popover': this._handlePopoverPlacement,
+      'focusin .kpi--has-popover': this._handlePopoverPlacement,
+      'keydown .kpi--has-popover': this._handlePopoverKeydown
     };
   }
 
@@ -1677,10 +1364,11 @@ export default class ReviewPage extends Component {
    * @private
    */
   _handleRevealVelocity(e) {
-    const card = e.target.closest('.velocity-card');
-    if (card) {
-      card.classList.remove('velocity-card--hidden');
-      card.classList.add('velocity-card--revealed');
+    // New editorial style: just remove blur
+    const el = e.target.closest('[data-action="reveal-velocity"]') || e.target;
+    if (el) {
+      el.style.filter = 'none';
+      el.style.cursor = 'default';
     }
   }
 
@@ -1796,8 +1484,8 @@ export default class ReviewPage extends Component {
 
     // Mise à jour visuelle des barres exclues (grisées)
     const defaultColor = chartType === 'throughput'
-      ? 'rgba(37, 99, 235, 0.8)'
-      : 'rgba(20, 184, 166, 0.8)';
+      ? 'rgba(84, 95, 115, 0.2)'
+      : 'rgba(87, 95, 117, 0.2)';
     const excludedColor = 'rgba(200, 200, 200, 0.4)';
 
     chart.data.datasets[0].backgroundColor = values.map((_, i) =>

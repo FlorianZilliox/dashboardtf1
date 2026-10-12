@@ -107,14 +107,14 @@
  */
 .input {
   width: 100%;
-  padding: var(--spacing-3) var(--spacing-4);
-  font-family: var(--font-family-primary);
+  padding: 8px 12px;
+  font-family: var(--font-body);
   font-size: var(--font-size-base);
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-card);
-  border: var(--border-width) solid var(--color-border-default);
-  border-radius: var(--radius-lg);
-  transition: var(--transition-all);
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  transition: all 120ms;
   outline: none;
 }
 
@@ -127,8 +127,8 @@
 }
 
 .input:focus {
-  border-color: var(--color-accent-blue);
-  box-shadow: 0 0 0 3px rgba(107, 155, 210, 0.15);
+  border-color: var(--ink);
+  box-shadow: none;
 }
 
 /**

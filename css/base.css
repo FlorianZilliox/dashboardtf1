@@ -29,6 +29,13 @@
 }
 
 /**
+ * Material Symbols - Configuration par défaut
+ */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/**
  * Suppression des marges par défaut
  */
 * {
@@ -62,6 +69,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11";
 }
 
 /**
@@ -118,6 +126,7 @@ h6 {
  * ------------------------------------------------------------------------- */
 
 h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-headline);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
   color: var(--color-text-primary);
@@ -450,6 +459,663 @@ hr {
  * ------------------------------------------------------------------------- */
 
 ::selection {
-  background-color: var(--color-accent-blue);
-  color: var(--color-text-inverse);
+  background: var(--sage);
+  color: var(--paper);
+}
+
+/* ========================================================================
+ * 4. CLASSES TYPOGRAPHIQUES EDITORIALES
+ * ======================================================================== */
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.kicker {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ochre);
+}
+
+.h-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(40px, 5vw, 68px);
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+  margin: 0;
+  font-variation-settings: "opsz" 144, "SOFT" 50;
+}
+
+.h-display em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--sage);
+}
+
+.h-section {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.h-card {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 18px;
+  margin: 0;
+}
+
+.lede {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 1.45;
+  color: var(--ink-2);
+  max-width: 56ch;
+}
+
+.dek {
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.55;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Density-aware display styles */
+[data-typo="sans"] .h-display,
+[data-typo="sans"] .kpi__num,
+[data-typo="sans"] .scenario__big,
+[data-typo="sans"] .cover__sprintno {
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  font-style: normal;
+}
+
+[data-typo="sans"] .h-display em {
+  font-style: normal;
+}
+
+[data-typo="mono"] .h-display,
+[data-typo="mono"] .kpi__num {
+  font-weight: 500;
+  letter-spacing: -0.05em;
+}
+
+/* ========================================================================
+ * 5. PILLS & BADGES EDITORIAUX
+ * ======================================================================== */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 500;
+  border: 1px solid currentColor;
+}
+
+.pill--ok { color: var(--ok); background: var(--ok-soft); border-color: transparent; }
+.pill--warn { color: var(--warn); background: var(--warn-soft); border-color: transparent; }
+.pill--bad { color: var(--bad); background: var(--bad-soft); border-color: transparent; }
+.pill--ghost { color: var(--ink-3); background: transparent; border-color: var(--line-soft); }
+.pill__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+/* ========================================================================
+ * 6. SECTIONS EDITORIALES
+ * ======================================================================== */
+
+.section--editorial {
+  border-top: 1px solid var(--line);
+  padding-top: 28px;
+  margin-top: 36px;
+}
+
+.section__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.section__title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.section__num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ochre);
+  letter-spacing: 0.14em;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.section__deck {
+  font-style: italic;
+  font-family: var(--font-display);
+  color: var(--ink-3);
+  font-size: 14px;
+}
+
+/* ========================================================================
+ * 7. COVER (En-tete de page editorial)
+ * ======================================================================== */
+
+.cover {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 32px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 28px;
+  margin-bottom: 36px;
+}
+
+.cover__sprintno {
+  font-family: var(--font-display);
+  font-size: clamp(80px, 10vw, 140px);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  font-variation-settings: "opsz" 144;
+}
+
+.cover__sprintno sup {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 14px;
+  vertical-align: super;
+  color: var(--ink-3);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+/* ========================================================================
+ * 8. KPI GRID EDITORIAL
+ * ======================================================================== */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.kpi {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: calc(20px * var(--density)) calc(24px * var(--density));
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: calc(160px * var(--density));
+}
+
+.kpi__label {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+
+.kpi__num {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 5vw, 64px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
+  font-variation-settings: "opsz" 144;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.kpi__num em {
+  font-style: italic;
+  font-weight: 300;
+  font-size: 0.6em;
+  color: var(--ink-3);
+}
+
+.kpi__hint {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+.kpi__foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--ink-3);
+  padding-top: 8px;
+  border-top: 1px solid var(--line-hair);
+}
+
+.kpi__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11.5px;
+}
+
+.kpi__delta--up { color: var(--ok); }
+.kpi__delta--down { color: var(--bad); }
+
+.kpi__sub {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.kpi__sub b {
+  color: var(--ink);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  margin-right: 2px;
+}
+
+.kpi--feat .kpi__num { color: var(--forest); }
+
+.tagrow { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag {
+  padding: 2px 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--ink-2);
+  background: var(--paper);
+}
+.tag b { color: var(--ink); margin-right: 3px; }
+
+/* ========================================================================
+ * 9. CHART GRIDS EDITORIAL
+ * ======================================================================== */
+
+.grid-2, .grid-3 {
+  display: grid;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+.grid-cell {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 22px 24px;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.grid-cell--span2 { grid-column: span 2; }
+
+.cell__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.cell__title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cell__title .dek {
+  font-family: var(--font-display);
+  font-style: italic;
+}
+
+.cell__chart {
+  height: 240px;
+  position: relative;
+}
+
+/* ========================================================================
+ * 10. TOGGLE EDITORIAL
+ * ======================================================================== */
+
+.toggle {
+  display: inline-flex;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--paper-2);
+}
+
+.toggle button {
+  background: none;
+  border: 0;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-family: var(--font-mono);
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.toggle button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ========================================================================
+ * 11. LEGEND EDITORIAL
+ * ======================================================================== */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: 8px;
+}
+
+.legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.legend__sw {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ========================================================================
+ * 12. STORY POINTS EDITORIAL
+ * ======================================================================== */
+
+.sp {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-2);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sp__hero {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.sp__hero .v {
+  font-family: var(--font-display);
+  font-size: 84px;
+  font-weight: 300;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+
+.sp__hero .frac {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--ink-3);
+}
+
+.sp__bar {
+  height: 8px;
+  width: 100%;
+  background: var(--paper-3);
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sp__bar-fill {
+  height: 100%;
+  background: var(--sage);
+  border-radius: 999px;
+}
+
+.sp__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+}
+
+.sp__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line-hair);
+  align-items: baseline;
+}
+
+.sp__row b {
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========================================================================
+ * 13. SCENARIOS EDITORIAL (Forecast)
+ * ======================================================================== */
+
+.scenarios {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.scenario {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--paper);
+  min-height: 240px;
+}
+
+.scenario--p50 { background: var(--paper-2); }
+
+.scenario__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.scenario__name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 24px;
+}
+
+.scenario--p15 .scenario__name { color: var(--rust); }
+.scenario--p85 .scenario__name { color: var(--sage); }
+
+.scenario__conf {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+.scenario__big {
+  font-family: var(--font-display);
+  font-size: 88px;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  font-variation-settings: "opsz" 144;
+}
+
+.scenario__sub {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+.scenario__sub b {
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.scenario__desc {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--ink-3);
+  line-height: 1.45;
+  border-top: 1px solid var(--line-hair);
+  padding-top: 12px;
+  margin-top: auto;
+}
+
+/* ========================================================================
+ * 14. DISTRIBUTION HISTOGRAM
+ * ======================================================================== */
+
+.dist {
+  border: 1px solid var(--line);
+  padding: 24px;
+  background: var(--paper);
+}
+
+/* ========================================================================
+ * 15. FINEPRINT
+ * ======================================================================== */
+
+.fineprint {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--ink-mute);
+  text-align: center;
+  margin-top: 56px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  letter-spacing: 0.02em;
+}
+
+/* ========================================================================
+ * 16. BUTTONS EDITORIAL
+ * ======================================================================== */
+
+.btn--editorial {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms;
+}
+
+.btn--editorial:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.btn--editorial-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms;
+}
+
+.btn--editorial-ghost:hover {
+  background: var(--paper-2);
+}
+
+.btn--editorial-small {
+  padding: 5px 12px;
+  font-size: 12px;
+}
+
+.arr {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 16px;
+}
+
+/* ========================================================================
+ * 17. DENSITY OVERRIDES
+ * ======================================================================== */
+
+[data-density="compact"] .kpi__num { font-size: 44px; }
+[data-density="compact"] .scenario__big { font-size: 64px; }
+[data-density="compact"] .cell__chart { height: 200px; }
+[data-density="cozy"] .kpi__num { font-size: 72px; }
+[data-density="cozy"] .scenario__big { font-size: 100px; }
+
+/* ========================================================================
+ * 18. RESPONSIVE EDITORIAL
+ * ======================================================================== */
+
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+  .scenarios { grid-template-columns: 1fr; }
+  .cover { grid-template-columns: 1fr; gap: 16px; }
 }

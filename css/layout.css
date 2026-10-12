@@ -19,8 +19,7 @@
  * ======================================================================== */
 
 /**
- * Container de l'application
- * Centre le contenu et définit la largeur maximale
+ * Container de l'application (legacy, utilisé dans les pages)
  */
 .app-container {
   width: 100%;
@@ -41,23 +40,23 @@
 }
 
 /* ========================================================================
- * 2. HEADER
+ * 2. HEADER (now handled by masthead in navigation.css)
  * ======================================================================== */
 
-/**
- * Header principal du dashboard
- * Affiche : Nom équipe | Sprint | Dates
- */
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-3) var(--spacing-5);
-  background-color: var(--color-bg-card);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-card);
-  margin-bottom: var(--spacing-4);
-  gap: var(--spacing-4);
+  display: none;
+}
+
+.glass-header {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.header__separator {
+  width: 1px;
+  height: 16px;
+  background-color: var(--color-border-default);
 }
 
 /**
@@ -83,9 +82,11 @@
 }
 
 .header__team-name {
+  font-family: var(--font-family-headline);
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
+  letter-spacing: -0.01em;
 }
 
 /**
@@ -268,6 +269,7 @@
   border-radius: var(--radius-xl);
   padding: var(--spacing-6);
   box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border-light);
 }
 
 /* ========================================================================
@@ -320,6 +322,7 @@
   border-radius: var(--radius-xl);
   padding: var(--spacing-6);
   box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border-light);
   min-height: var(--height-chart);
   display: flex;
   flex-direction: column;
@@ -333,7 +336,8 @@
 }
 
 .chart-container__title {
-  font-size: var(--font-size-lg);
+  font-family: var(--font-family-headline);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
@@ -358,6 +362,7 @@
   border-radius: var(--radius-xl);
   padding: var(--spacing-6);
   box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border-light);
 }
 
 .goals-section__goals {
@@ -480,10 +485,12 @@
     padding: 0;
   }
 
+  .sidebar,
   .nav,
   .admin-toggle,
   .admin-content,
-  .header__actions {
+  .header__actions,
+  .header {
     display: none !important;
   }
 
@@ -528,17 +535,6 @@
     padding: var(--spacing-4);
   }
 
-  .header {
-    flex-direction: column;
-    gap: var(--spacing-4);
-    text-align: center;
-  }
-
-  .header__brand,
-  .header__actions {
-    justify-content: center;
-  }
-
   .charts-grid {
     grid-template-columns: 1fr;
   }
@@ -574,11 +570,12 @@
 }
 
 /**
- * Mobile (max 576px)
+ * Mobile (max 768px)
  */
-@media (max-width: 576px) {
-  .app-container {
-    padding: var(--spacing-3);
+@media (max-width: 768px) {
+  .main {
+    padding: var(--spacing-4);
+    padding-bottom: 80px; /* Espace pour la bottom nav */
   }
 
   .section,
@@ -589,12 +586,11 @@
   }
 
   .header {
-    padding: var(--spacing-4);
+    padding: var(--spacing-3) var(--spacing-4);
   }
 
-  .header__logo {
-    width: 40px;
-    height: 40px;
+  .header__team-name {
+    font-size: var(--font-size-base);
   }
 }
 
@@ -639,9 +635,17 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-4);
-  max-width: var(--max-width-content);
-  margin: 0 auto;
+}
+
+/* ========================================================================
+ * MAIN WRAPPER (à droite de la sidebar)
+ * ======================================================================== */
+
+.app__main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .nav-container {
@@ -650,6 +654,10 @@
 
 .main {
   flex: 1;
+  padding: 36px 36px 64px;
+  max-width: var(--max-width-content);
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* ========================================================================

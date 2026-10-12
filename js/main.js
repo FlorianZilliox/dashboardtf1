@@ -28,6 +28,7 @@ import HowManyPage from './pages/HowManyPage.js';
 
 // Services
 import storageService from './services/storageService.js';
+import tweaksService from './services/tweaksService.js';
 
 // =========================================================================
 // APPLICATION CLASS
@@ -53,6 +54,9 @@ class App {
    */
   async init() {
     console.log('[App] Initialisation...');
+
+    // Initialiser le theming
+    tweaksService.init();
 
     // Récupérer les containers DOM
     this._setupContainers();
@@ -119,9 +123,6 @@ class App {
         storyPointsCommitted: null,
         storyPointsDelivered: null
       },
-
-      // Sprint Goals
-      sprintGoals: [],
 
       // UI
       currentSection: 'admin',

@@ -441,18 +441,17 @@ export default class FileUploader extends Component {
     return `
       <div class="file-upload" data-ref="container">
         <div class="file-upload__dropzone" data-ref="dropzone">
-          <div class="file-upload__icon">📁</div>
-          <p class="file-upload__text">
-            Glissez vos fichiers CSV ici
-          </p>
-          <p class="file-upload__subtext">ou</p>
-          <label class="file-upload__label btn btn--secondary">
-            Parcourir
+          <div class="dropzone__icon">↗</div>
+          <strong style="font-family:var(--font-display);font-size:18px;font-weight:500;margin-bottom:6px">Déposer les CSV ici</strong>
+          <div class="dek" style="margin-bottom:14px">Sprint Review &amp; Time in Status — exports EazyBI</div>
+          <label class="btn--editorial btn--editorial-small" style="display:inline-flex">
+            Parcourir <span class="arr">→</span>
             <input type="file"
                    class="file-upload__input"
                    accept=".csv"
                    multiple
-                   data-ref="fileInput" />
+                   data-ref="fileInput"
+                   style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);border:0" />
           </label>
         </div>
 
